@@ -12,10 +12,6 @@ class Dashboard extends HookConsumerWidget {
     final createGroupController = ref.read(GroupController.groupControllerProvider.notifier);
     return Scaffold(
       appBar: AppBar(
-        leading: InkWell(
-          onTap: () {},
-          child: const Icon(Icons.add),
-        ),
         title: Text(
           'Dashboard',
           style: TextStyleManager(kColor: Colors.white, kFontSize: 25.0, kFontWeight: FontWeight.normal),

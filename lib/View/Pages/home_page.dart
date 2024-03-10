@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:derpy/Components/buttons/filter_button.dart';
-import 'package:derpy/Components/reusable_card.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:flutter/material.dart';
@@ -86,24 +85,24 @@ class HomePage extends HookConsumerWidget {
                   ],
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  itemBuilder: (context, index) {
-                    return ReusableCard(
-                      imagePath: 'cc',
-                      title: 'Cross-Fit Gg',
-                      description:
-                          "If you're looking for a single word to succinctly convey the option of making information public or private, you could use the term ",
-                      visibilty: 'Public',
-                      groupOrEvent: 'Group',
-                      onTap: () {
-                        log('message');
-                      },
-                    );
-                  },
-                  itemCount: 10,
-                ),
-              ),
+              // Expanded(
+              //   child: ListView.builder(
+              //     itemBuilder: (context, index) {
+              //       return ReusableCard(
+              //         imagePath: 'cc',
+              //         title: 'Cross-Fit Gg',
+              //         description:
+              //             "If you're looking for a single word to succinctly convey the option of making information public or private, you could use the term ",
+              //         visibilty: 'Public',
+              //         groupOrEvent: 'Group',
+              //         onTap: () {
+              //           log('message');
+              //         },
+              //       );
+              //     },
+              //     itemCount: 10,
+              //   ),
+              // ),
             ],
           ),
         ),
