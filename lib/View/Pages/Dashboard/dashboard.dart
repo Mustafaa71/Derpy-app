@@ -28,8 +28,8 @@ class Dashboard extends HookConsumerWidget {
             builder: (context) {
               return const AddGroup();
             },
-            useSafeArea: true,
             isScrollControlled: true,
+            useSafeArea: true,
           );
         },
         child: const Icon(Icons.add),

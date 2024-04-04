@@ -1,5 +1,6 @@
 import 'package:derpy/Components/card_tag.dart';
 import 'package:derpy/Components/custom_text.dart';
+import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:flutter/material.dart';
 
 class ReusableCardContent extends StatelessWidget {
@@ -23,7 +24,14 @@ class ReusableCardContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // CustomText(title: cardTitle, style: TextStyleManager.primaryTextStyle),
+            CustomText(
+              title: cardTitle,
+              style: TextStyleManager(
+                kColor: Colors.white,
+                kFontSize: 20.0,
+                kFontWeight: FontWeight.bold,
+              ),
+            ),
             CustomText(
               title: cardDescription,
               style: const TextStyle(fontSize: 12),

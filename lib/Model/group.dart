@@ -50,4 +50,12 @@ class Group {
       'events': events.map((event) => event.toJson()).toList(),
     };
   }
+
+  void addGroupToList(Group addGroup) {
+    Fggg.gg.add(addGroup);
+  }
+}
+
+class Fggg {
+  static List<Group> gg = [];
 }

@@ -45,6 +45,8 @@ dart_code_metrics:
               ignored-parameters:
                   - height
                   - width
+                  - topRight
+                  - topLeft
         - newline-before-return: false
         - avoid-ignoring-return-values: false
         - prefer-match-file-name:
