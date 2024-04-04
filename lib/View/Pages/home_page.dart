@@ -1,11 +1,17 @@
 import 'dart:developer';
 
 import 'package:derpy/Components/buttons/filter_button.dart';
+import 'package:derpy/Components/reusable_card.dart';
 import 'package:derpy/Constants/color_manager.dart';
+import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
+import 'package:derpy/Model/group.dart';
+import 'package:derpy/View/Pages/group_content_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
@@ -13,10 +19,26 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     DateTime now = DateTime.now();
-
+    final supabase = Supabase.instance.client;
     String formattedDate = DateFormat('MMM d, yyyy').format(now).toUpperCase();
     final authController = ref.read(AuthController.authControllerProvider.notifier);
     authController.userStateListiner();
+
+    var dataList = useState<List<Group>>([]);
+
+    Future<void> fetchData() async {
+      final response = await supabase.from('group').select(); // Fetch data from Supabase
+      if (response == null && response != null) {
+        dataList.value = response!.map((e) => Group.fromJson(e)).toList();
+      } else {
+        print('Error fetching data: ${response}');
+      }
+    }
+
+    useEffect(() {
+      fetchData();
+      return null;
+    }, []);
 
     return Scaffold(
       body: SafeArea(
@@ -41,14 +63,15 @@ class HomePage extends HookConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 6.0),
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Derpy',
-                            // style: TextStyleManager.primaryTextStyle,
+                            style:
+                                TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
                           ),
-                          Text('Welcome, Mustafa'),
+                          const Text('Welcome, Mustafa'),
                         ],
                       ),
                     ],
@@ -59,6 +82,8 @@ class HomePage extends HookConsumerWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 6.0),
+              Text(formattedDate),
               const Divider(color: Colors.white),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -85,24 +110,28 @@ class HomePage extends HookConsumerWidget {
                   ],
                 ),
               ),
-              // Expanded(
-              //   child: ListView.builder(
-              //     itemBuilder: (context, index) {
-              //       return ReusableCard(
-              //         imagePath: 'cc',
-              //         title: 'Cross-Fit Gg',
-              //         description:
-              //             "If you're looking for a single word to succinctly convey the option of making information public or private, you could use the term ",
-              //         visibilty: 'Public',
-              //         groupOrEvent: 'Group',
-              //         onTap: () {
-              //           log('message');
-              //         },
-              //       );
-              //     },
-              //     itemCount: 10,
-              //   ),
-              // ),
+              Expanded(
+                child: ListView.builder(
+                  itemBuilder: (context, index) {
+                    final data = dataList.value[index];
+                    return ReusableCard(
+                      imagePath: data.groupImage,
+                      title: data.name,
+                      description: data.description,
+                      visibilty: 'false',
+                      groupOrEvent: 'Group',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const GroupContentPage(),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  itemCount: dataList.value.length,
+                ),
+              ),
             ],
           ),
         ),

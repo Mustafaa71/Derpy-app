@@ -19,9 +19,11 @@ class ReusableCardImage extends StatelessWidget {
             topLeft: Radius.circular(20),
             bottomLeft: Radius.circular(20),
           ),
-          child: Image.asset(
-            'assets/$imagePath.jpeg',
-            fit: BoxFit.cover,
+          child: Image.network(
+            imagePath,
+            errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+              return const Icon(Icons.error);
+            },
           ),
         ),
       ),

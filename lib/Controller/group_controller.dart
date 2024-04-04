@@ -1,6 +1,7 @@
 import 'package:derpy/Model/event.dart';
 import 'package:derpy/Model/group.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupController extends StateNotifier<AsyncValue> {
@@ -9,6 +10,19 @@ class GroupController extends StateNotifier<AsyncValue> {
     return GroupController();
   });
   GroupController() : super(const AsyncLoading());
+
+  Future<String> openGallery() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      if (image != null) {
+        return image.path;
+      }
+    } catch (e) {
+      print(e);
+    }
+    return 'null';
+  }
 
   Future<void> createGroup(
     String admin,

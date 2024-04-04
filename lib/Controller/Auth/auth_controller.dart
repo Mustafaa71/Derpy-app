@@ -16,8 +16,8 @@ class AuthController extends StateNotifier<AsyncValue> {
     supabase.auth.onAuthStateChange.listen((data) {
       final AuthChangeEvent event = data.event;
       final Session? session = data.session;
-      print('EVENTGg: $event');
-      print(session);
+      print('EVENT: $event');
+      print('User: $session');
 
       state = AsyncValue.data(data);
     });
