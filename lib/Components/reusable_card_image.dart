@@ -21,9 +21,23 @@ class ReusableCardImage extends StatelessWidget {
           ),
           child: Image.network(
             imagePath,
-            errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return const Center(
+                child: CircularProgressIndicator(
+                  value: 1,
+                  color: Colors.blue,
+                ),
+              );
+            },
+            errorBuilder: (
+              BuildContext context,
+              Object exception,
+              StackTrace? stackTrace,
+            ) {
               return const Icon(Icons.error);
             },
+            fit: BoxFit.cover,
           ),
         ),
       ),
