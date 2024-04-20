@@ -25,6 +25,7 @@ class GroupController extends StateNotifier<AsyncValue> {
   }
 
   Future<void> createGroup(
+    String id,
     String admin,
     String name,
     String description,
@@ -36,6 +37,7 @@ class GroupController extends StateNotifier<AsyncValue> {
     List<Event> events,
   ) async {
     final group = Group(
+      id: id,
       admin: admin,
       name: name,
       description: description,

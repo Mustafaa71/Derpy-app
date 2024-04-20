@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:derpy/Components/avatar.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
@@ -10,9 +11,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class AddGroup extends HookConsumerWidget {
   const AddGroup({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = useState('Football');
@@ -21,33 +24,8 @@ class AddGroup extends HookConsumerWidget {
       selectedCategory.value = newValue!;
     }
 
-    String? selectedImagePath;
-
-    Future<String> openGallery() async {
-      final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      try {
-        if (image != null) {
-          final imagePath = image.path;
-          final result = imagePath.split('/').last;
-          selectedImagePath = result;
-          log(result);
-        }
-      } catch (e) {
-        print(e);
-      }
-      return '';
-    }
-
-    Future<String> imagePath() async {
-      return await openGallery();
-    }
-
-    ///dasdsad
     final imagePickerController = ref.watch(ImagePickerController.imagePickerProvider.notifier);
-
     final textControllerState = ref.watch(TextEditingControllerNotifier.textEditingControllerProvider);
-
     final titleEditingController = textControllerState.titleController;
     final descriptionEditingController = textControllerState.descriptionController;
     final locationEditingController = textControllerState.locationController;
@@ -56,6 +34,73 @@ class AddGroup extends HookConsumerWidget {
 
     final groupAdmin = ref.watch(AuthController.authControllerProvider.notifier);
     final String? userId = groupAdmin.getUserId();
+
+    final ggUser = userId;
+
+    final isLoading = useState<bool>(false);
+    String? imagePath;
+
+    Future<void> upload() async {
+      final picker = ImagePicker();
+      final imageFile = await picker.pickImage(
+        source: ImageSource.gallery,
+      );
+      if (imageFile == null) {
+        return;
+      }
+
+      try {
+        final bytes = await imageFile.readAsBytes();
+        final fileExt = imageFile.path.split('.').last;
+        const uuid = Uuid();
+
+        final fileName = '${uuid.v4()}.$fileExt';
+        final filePath = fileName;
+        imagePath = filePath;
+        await supabase.storage.from('Gg').uploadBinary(
+              filePath,
+              bytes,
+              fileOptions: const FileOptions(upsert: true),
+            );
+      } on StorageException catch (error) {
+        if (context.mounted) {
+          log(error.toString());
+        }
+      } catch (error) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Unexpected error occurred'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+
+      isLoading.value = false;
+    }
+
+    const uuid = Uuid();
+    final groupId = uuid.v4();
+
+    const valueToseeSomething = 'nnjkni';
+
+    Future<void> addGroupIdToApiUserList(String gg) async {
+      final checkSupabaseResponse =
+          await supabase.from('user').select('groups').eq('id', '2ce67ac6-6f56-4fb9-b5b7-e54b4c9219f7').single();
+
+      log(checkSupabaseResponse.toString());
+
+      final List<dynamic> currentGroups = checkSupabaseResponse['groups'];
+
+      final updatedGroups = ['', ...currentGroups, gg];
+
+      final addValue = await supabase
+          .from('user')
+          .update({'groups': updatedGroups}).eq('id', '2ce67ac6-6f56-4fb9-b5b7-e54b4c9219f7');
+
+      log(addValue.toString());
+    }
 
     return Container(
       padding: const EdgeInsets.all(24.0),
@@ -68,51 +113,18 @@ class AddGroup extends HookConsumerWidget {
       ),
       child: Column(
         children: [
-          Text(
-            'Create Group',
-            style: TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
+          InkWell(
+            onTap: () async => await addGroupIdToApiUserList(valueToseeSomething),
+            child: Text(
+              'Create Group',
+              style: TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
+            ),
           ),
           const Divider(color: Colors.blueAccent),
-          InkWell(
-            onTap: () {
-              openGallery();
-            },
-            child: Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 130, maxHeight: 130),
-                margin: const EdgeInsets.all(20.0),
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF272A36),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(10.0),
-                      ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.camera,
-                            color: Colors.blueAccent,
-                          ),
-                          const SizedBox(height: 6.0),
-                          Text(
-                            'Add photo',
-                            style: TextStyleManager(
-                              kColor: const Color(0xFF797B83),
-                              kFontSize: 20.0,
-                              kFontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+          Center(
+            child: Avatar(
+              imageUrl: imagePath,
+              onClick: () => upload(),
             ),
           ),
           Container(
@@ -193,28 +205,6 @@ class AddGroup extends HookConsumerWidget {
               ),
             ),
           ),
-
-          /// Padding(
-          ///   padding: const EdgeInsets.only(top: 15.0),
-          ///   child: ToggleButtons(
-          ///     isSelected: [
-          ///       selectedModifierIndex.value == 0,
-          ///       selectedModifierIndex.value == 1,
-          ///     ],
-          ///     onPressed: (int index) {
-          ///       selectedModifierIndex.value = index;
-          ///       print('Selected modifier: ${accessModifier[index]}');
-          ///     },
-          ///     constraints: const BoxConstraints(minHeight: 40.0, minWidth: 80.0),
-          ///     selectedColor: Colors.white,
-          ///     selectedBorderColor: Colors.blueAccent,
-          ///     borderRadius: const BorderRadius.all(Radius.circular(8)),
-          ///     children: [
-          ///       Text(accessModifier.first),
-          ///       Text(accessModifier[1]),
-          ///     ],
-          ///   ),
-          /// ),
           const Spacer(),
           InkWell(
             onTap: () {
@@ -241,10 +231,11 @@ class AddGroup extends HookConsumerWidget {
                   );
                 } else {
                   final addGg = Group(
+                    id: groupId,
                     admin: userId.toString(),
                     name: titleEditingController.text,
                     description: descriptionEditingController.text,
-                    groupImage: selectedImagePath ?? '',
+                    groupImage: imagePath ?? '',
                     category: selectedCategory.value,
                     location: locationEditingController.text,
                     accessModifier: false,
@@ -253,6 +244,7 @@ class AddGroup extends HookConsumerWidget {
                   );
 
                   await supabase.from('group').insert([addGg.toJson()]);
+                  await addGroupIdToApiUserList(groupId);
 
                   log('message: GG is working');
                   titleEditingController.clear();

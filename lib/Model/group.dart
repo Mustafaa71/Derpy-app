@@ -1,6 +1,7 @@
 import 'package:derpy/Model/event.dart';
 
 class Group {
+  final String id;
   final String admin;
   final String name;
   final String description;
@@ -12,6 +13,7 @@ class Group {
   final List<Event> events;
 
   Group({
+    required this.id,
     required this.admin,
     required this.name,
     required this.description,
@@ -25,6 +27,7 @@ class Group {
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
+      id: json['group_id'],
       admin: json['admin_id'],
       name: json['name'],
       description: json['description'],
@@ -33,12 +36,15 @@ class Group {
       location: json['location'],
       accessModifier: json['access_modifier'],
       members: List<String>.from(json['members']),
-      events: (json['events']).map((eventJson) => Event.fromJson(eventJson)).toList(),
+      events: (json['events'] != null)
+          ? List<Event>.from(json['events'].map((eventJson) => Event.fromJson(eventJson)))
+          : [],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'group_id': id,
       'admin_id': admin,
       'name': name,
       'description': description,
@@ -51,11 +57,8 @@ class Group {
     };
   }
 
-  void addGroupToList(Group addGroup) {
-    Fggg.gg.add(addGroup);
+  @override
+  String toString() {
+    return 'Group(Group id: $id, $admin, name: $name, description: $description, groupImage: $groupImage, category: $category, location: $location, accessModifier: $accessModifier, members: $members, events: $events)';
   }
-}
-
-class Fggg {
-  static List<Group> gg = [];
 }
