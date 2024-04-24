@@ -1,53 +1,62 @@
-import 'dart:io';
+import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class ImagePickerController extends StateNotifier<AsyncValue> {
   final ImagePicker picker = ImagePicker();
+  String? imagePath;
+
   static final imagePickerProvider = StateNotifierProvider<ImagePickerController, AsyncValue>((ref) {
     return ImagePickerController();
   });
   final supabase = Supabase.instance.client;
   ImagePickerController() : super(const AsyncLoading());
 
-  Future<void> openGallery() async {
+  Future<void> upload(
+    BuildContext context,
+    bool isLoading,
+  ) async {
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    try {
-      if (image != null) {
-        image.path;
-      }
-    } catch (e) {
-      print(e);
+    final imageFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (imageFile == null) {
+      return;
     }
-  }
 
-  Future<void> uploadImageToSupabase(String imagePath) async {
     try {
-      File file = File(imagePath);
+      final bytes = await imageFile.readAsBytes();
+      final fileExt = imageFile.path.split('.').last;
+      const uuid = Uuid();
 
-      final storage = supabase.storage.from('group_images/images');
-      final fileName = '$imagePath/.jpg';
-      final response = await storage.upload(
-        fileName,
-        file,
-        fileOptions: const FileOptions(
-          cacheControl: '3600',
-          upsert: true,
-        ),
-      );
-
-      if (response.isNotEmpty) {
-        // Image uploaded successfully
-        print('Image uploaded successfully.');
-      } else {
-        // Handle error if upload failed
-        print('Error uploading image: $response');
+      final fileName = '${uuid.v4()}.$fileExt';
+      final filePath = fileName;
+      imagePath = filePath;
+      await supabase.storage.from('Gg').uploadBinary(
+            filePath,
+            bytes,
+            fileOptions: const FileOptions(upsert: true),
+          );
+    } on StorageException catch (error) {
+      if (context.mounted) {
+        log(error.toString());
       }
-    } catch (e) {
-      print('Error uploading image: $e');
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Unexpected error occurred'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
     }
+    state = AsyncData(imagePath);
+    print(state);
+    isLoading = false;
   }
 }

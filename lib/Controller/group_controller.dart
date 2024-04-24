@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:derpy/Model/event.dart';
 import 'package:derpy/Model/group.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,5 +53,32 @@ class GroupController extends StateNotifier<AsyncValue> {
 
     final response = await supabase.from('group').insert([group.toJson()]);
     state = AsyncData(response);
+  }
+
+  Future<void> addGroupIdToApiUserList(
+    String newGroupId,
+    Object getUserId,
+  ) async {
+    final checkSupabaseResponse = await supabase.from('user').select('groups').eq('id', getUserId.toString()).single();
+
+    log(checkSupabaseResponse.toString());
+
+    final List<dynamic>? currentGroups = checkSupabaseResponse['groups'];
+
+    if (currentGroups != null) {
+      final List<dynamic> updatedGroups = [...currentGroups, newGroupId];
+
+      final addValue = await supabase.from('user').update({'groups': updatedGroups}).eq('id', getUserId.toString());
+
+      log(addValue.toString());
+    } else {
+      final List<dynamic> updatedGroups = [newGroupId];
+
+      final addValue = await supabase
+          .from('user')
+          .upsert({'id': getUserId, 'groups': updatedGroups}).eq('id', '2ce67ac6-6f56-4fb9-b5b7-e54b4c9219f7');
+
+      log(addValue.toString());
+    }
   }
 }

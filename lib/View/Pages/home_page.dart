@@ -4,10 +4,11 @@ import 'package:derpy/Components/buttons/filter_button.dart';
 import 'package:derpy/Components/reusable_card.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
+import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/Model/group.dart';
+import 'package:derpy/View/Pages/join_group_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,6 +21,7 @@ class HomePage extends HookConsumerWidget {
     DateTime now = DateTime.now();
     final supabase = Supabase.instance.client;
     String formattedDate = DateFormat('MMM d, yyyy').format(now).toUpperCase();
+    final userInformation = ref.watch(AuthController.authControllerProvider.notifier);
 
     final groupList = useState<List<Group>>([]);
 
@@ -50,11 +52,11 @@ class HomePage extends HookConsumerWidget {
                     children: [
                       Container(
                         color: const Color(0xFF54585f),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                           child: Text(
-                            'M',
-                            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                            userInformation.getName().substring(0, 1).toUpperCase(),
+                            style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -67,7 +69,7 @@ class HomePage extends HookConsumerWidget {
                             style:
                                 TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
                           ),
-                          const Text('Welcome, Mustafa'),
+                          Text('Welcome, ${userInformation.getName()}'),
                         ],
                       ),
                     ],
@@ -115,11 +117,18 @@ class HomePage extends HookConsumerWidget {
                       imagePath: hh,
                       title: data.name,
                       description: data.description,
-                      visibilty: 'Public',
+                      visibilty: data.category,
                       groupOrEvent: 'Group',
                       onTap: () {
                         if (supabase.auth.currentUser != null) {
-                          context.go('/groupContent');
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => JoinGroupPage(
+                              groupAvatar: hh,
+                              groupName: data.name,
+                              groupDescription: data.description,
+                              groupLocation: data.location,
+                            ),
+                          ));
                         } else {
                           showDialog(
                             context: context,
