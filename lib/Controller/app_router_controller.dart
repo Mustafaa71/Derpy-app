@@ -1,5 +1,5 @@
+import 'package:derpy/View/Pages/Auth/sign_in.dart';
 import 'package:derpy/View/Pages/Dashboard/dashboard.dart';
-import 'package:derpy/View/Pages/group_content_page.dart';
 import 'package:derpy/View/Pages/home_page.dart';
 import 'package:derpy/View/Pages/main_page.dart';
 import 'package:derpy/View/Pages/search_page.dart';
@@ -11,6 +11,10 @@ class AppRouterController {
     routes: <RouteBase>[
       GoRoute(
         path: '/',
+        builder: (context, state) => const SignIn(),
+      ),
+      GoRoute(
+        path: '/main',
         builder: (context, state) => const MainPage(),
       ),
       GoRoute(
@@ -28,10 +32,6 @@ class AppRouterController {
       GoRoute(
         path: '/setting',
         builder: (context, state) => const SettingPage(),
-      ),
-      GoRoute(
-        path: '/groupContent',
-        builder: (context, state) => const GroupContentPage(),
       ),
     ],
   );

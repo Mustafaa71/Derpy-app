@@ -6,7 +6,7 @@ import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/Model/group.dart';
-import 'package:derpy/View/Pages/group_content_page.dart';
+import 'package:derpy/View/Pages/join_group_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -21,23 +21,21 @@ class HomePage extends HookConsumerWidget {
     DateTime now = DateTime.now();
     final supabase = Supabase.instance.client;
     String formattedDate = DateFormat('MMM d, yyyy').format(now).toUpperCase();
-    final authController = ref.read(AuthController.authControllerProvider.notifier);
-    authController.userStateListiner();
+    final userInformation = ref.watch(AuthController.authControllerProvider.notifier);
 
-    var dataList = useState<List<Group>>([]);
+    final groupList = useState<List<Group>>([]);
 
-    Future<void> fetchData() async {
-      final response = await supabase.from('group').select(); // Fetch data from Supabase
-      if (response == null && response != null) {
-        dataList.value = response!.map((e) => Group.fromJson(e)).toList();
-      } else {
-        print('Error fetching data: ${response}');
+    Future<void> groupData() async {
+      if (groupList.value.isEmpty) {
+        final response = await supabase.from('group').select();
+        groupList.value = response.map((e) => Group.fromJson(e)).toList();
+        log(groupList.value.toString());
       }
     }
 
     useEffect(() {
-      fetchData();
-      return null;
+      groupData();
+      return () {};
     }, []);
 
     return Scaffold(
@@ -54,11 +52,11 @@ class HomePage extends HookConsumerWidget {
                     children: [
                       Container(
                         color: const Color(0xFF54585f),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                           child: Text(
-                            'M',
-                            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                            userInformation.getName().substring(0, 1).toUpperCase(),
+                            style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -71,7 +69,7 @@ class HomePage extends HookConsumerWidget {
                             style:
                                 TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
                           ),
-                          const Text('Welcome, Mustafa'),
+                          Text('Welcome, ${userInformation.getName()}'),
                         ],
                       ),
                     ],
@@ -113,23 +111,47 @@ class HomePage extends HookConsumerWidget {
               Expanded(
                 child: ListView.builder(
                   itemBuilder: (context, index) {
-                    final data = dataList.value[index];
+                    final data = groupList.value[index];
+                    final hh = supabase.storage.from('Gg').getPublicUrl(data.groupImage);
                     return ReusableCard(
-                      imagePath: data.groupImage,
+                      imagePath: hh,
                       title: data.name,
                       description: data.description,
-                      visibilty: 'false',
+                      visibilty: data.category,
                       groupOrEvent: 'Group',
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const GroupContentPage(),
-                          ),
-                        );
+                        if (supabase.auth.currentUser != null) {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => JoinGroupPage(
+                              groupAvatar: hh,
+                              groupName: data.name,
+                              groupDescription: data.description,
+                              groupLocation: data.location,
+                            ),
+                          ));
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('User is not register'),
+                                content: const Text('Pls register to can view our content'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        }
                       },
                     );
                   },
-                  itemCount: dataList.value.length,
+                  itemCount: groupList.value.length,
                 ),
               ),
             ],

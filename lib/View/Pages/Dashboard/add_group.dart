@@ -1,18 +1,21 @@
 import 'dart:developer';
 
+import 'package:derpy/Components/avatar.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
+import 'package:derpy/Controller/group_controller.dart';
 import 'package:derpy/Controller/image_picker_controller.dart';
 import 'package:derpy/Model/group.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class AddGroup extends HookConsumerWidget {
   const AddGroup({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = useState('Football');
@@ -21,41 +24,22 @@ class AddGroup extends HookConsumerWidget {
       selectedCategory.value = newValue!;
     }
 
-    String? selectedImagePath;
-
-    Future<String> openGallery() async {
-      final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      try {
-        if (image != null) {
-          final imagePath = image.path;
-          final result = imagePath.split('/').last;
-          selectedImagePath = result;
-          log(result);
-        }
-      } catch (e) {
-        print(e);
-      }
-      return '';
-    }
-
-    Future<String> imagePath() async {
-      return await openGallery();
-    }
-
-    ///dasdsad
     final imagePickerController = ref.watch(ImagePickerController.imagePickerProvider.notifier);
-
     final textControllerState = ref.watch(TextEditingControllerNotifier.textEditingControllerProvider);
-
+    final groupController = ref.watch(GroupController.groupControllerProvider.notifier);
+    final groupAdmin = ref.watch(AuthController.authControllerProvider.notifier);
     final titleEditingController = textControllerState.titleController;
     final descriptionEditingController = textControllerState.descriptionController;
     final locationEditingController = textControllerState.locationController;
 
     const kBorderRadius = Radius.circular(20.0);
 
-    final groupAdmin = ref.watch(AuthController.authControllerProvider.notifier);
-    final String? userId = groupAdmin.getUserId();
+    final String? getUserId = groupAdmin.getUserId();
+
+    String? imagePath;
+
+    const uuid = Uuid();
+    final groupId = uuid.v4();
 
     return Container(
       padding: const EdgeInsets.all(24.0),
@@ -73,46 +57,10 @@ class AddGroup extends HookConsumerWidget {
             style: TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
           ),
           const Divider(color: Colors.blueAccent),
-          InkWell(
-            onTap: () {
-              openGallery();
-            },
-            child: Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 130, maxHeight: 130),
-                margin: const EdgeInsets.all(20.0),
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF272A36),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(10.0),
-                      ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.camera,
-                            color: Colors.blueAccent,
-                          ),
-                          const SizedBox(height: 6.0),
-                          Text(
-                            'Add photo',
-                            style: TextStyleManager(
-                              kColor: const Color(0xFF797B83),
-                              kFontSize: 20.0,
-                              kFontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+          Center(
+            child: Avatar(
+              imageUrl: imagePath,
+              onClick: () => imagePickerController.upload(context, false),
             ),
           ),
           Container(
@@ -193,35 +141,14 @@ class AddGroup extends HookConsumerWidget {
               ),
             ),
           ),
-
-          /// Padding(
-          ///   padding: const EdgeInsets.only(top: 15.0),
-          ///   child: ToggleButtons(
-          ///     isSelected: [
-          ///       selectedModifierIndex.value == 0,
-          ///       selectedModifierIndex.value == 1,
-          ///     ],
-          ///     onPressed: (int index) {
-          ///       selectedModifierIndex.value = index;
-          ///       print('Selected modifier: ${accessModifier[index]}');
-          ///     },
-          ///     constraints: const BoxConstraints(minHeight: 40.0, minWidth: 80.0),
-          ///     selectedColor: Colors.white,
-          ///     selectedBorderColor: Colors.blueAccent,
-          ///     borderRadius: const BorderRadius.all(Radius.circular(8)),
-          ///     children: [
-          ///       Text(accessModifier.first),
-          ///       Text(accessModifier[1]),
-          ///     ],
-          ///   ),
-          /// ),
           const Spacer(),
           InkWell(
             onTap: () {
               Future.microtask(() async {
                 if (titleEditingController.text.isEmpty ||
                     descriptionEditingController.text.isEmpty ||
-                    locationEditingController.text.isEmpty) {
+                    locationEditingController.text.isEmpty ||
+                    imagePath.toString().isEmpty) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -240,11 +167,12 @@ class AddGroup extends HookConsumerWidget {
                     },
                   );
                 } else {
-                  final addGg = Group(
-                    admin: userId.toString(),
+                  final addGroupToSupabase = Group(
+                    id: groupId,
+                    admin: getUserId.toString(),
                     name: titleEditingController.text,
                     description: descriptionEditingController.text,
-                    groupImage: selectedImagePath ?? '',
+                    groupImage: imagePickerController.imagePath ?? '',
                     category: selectedCategory.value,
                     location: locationEditingController.text,
                     accessModifier: false,
@@ -252,7 +180,11 @@ class AddGroup extends HookConsumerWidget {
                     events: [],
                   );
 
-                  await supabase.from('group').insert([addGg.toJson()]);
+                  await supabase.from('group').insert([addGroupToSupabase.toJson()]);
+                  await groupController.addGroupIdToApiUserList(
+                    groupId,
+                    getUserId.toString(),
+                  );
 
                   log('message: GG is working');
                   titleEditingController.clear();

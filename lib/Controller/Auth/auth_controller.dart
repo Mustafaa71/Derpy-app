@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:derpy/Model/registration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,17 +13,6 @@ class AuthController extends StateNotifier<AsyncValue> {
   });
 
   AuthController() : super(const AsyncLoading());
-
-  void userStateListiner() {
-    supabase.auth.onAuthStateChange.listen((data) {
-      final AuthChangeEvent event = data.event;
-      final Session? session = data.session;
-      print('EVENT: $event');
-      print('User: $session');
-
-      state = AsyncValue.data(data);
-    });
-  }
 
   static void clearAndDisposeControllers(
     List<TextEditingController> controllers,
@@ -71,7 +62,7 @@ class AuthController extends StateNotifier<AsyncValue> {
 
       state = AsyncData(response);
 
-      print('successful');
+      log('successful');
     } catch (error) {
       state = AsyncError(error, StackTrace.current);
       print(error);
