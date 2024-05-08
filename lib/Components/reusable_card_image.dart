@@ -4,9 +4,11 @@ class ReusableCardImage extends StatelessWidget {
   const ReusableCardImage({
     super.key,
     required this.imagePath,
+    this.topRight = 20,
   });
 
   final String imagePath;
+  final double? topRight;
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +17,10 @@ class ReusableCardImage extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: 1,
         child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            bottomLeft: Radius.circular(20),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: topRight != null ? const Radius.circular(20) : const Radius.circular(0),
+            bottomLeft: const Radius.circular(20),
           ),
           child: Image.network(
             imagePath,

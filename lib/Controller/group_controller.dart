@@ -8,10 +8,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupController extends StateNotifier<AsyncValue> {
   final supabase = Supabase.instance.client;
+  List<Group> groupList = [];
   static final groupControllerProvider = StateNotifierProvider<GroupController, AsyncValue>((ref) {
     return GroupController();
   });
-  GroupController() : super(const AsyncLoading());
+  GroupController() : super(const AsyncValue.loading()) {
+    groupData();
+  }
 
   Future<String> openGallery() async {
     final picker = ImagePicker();
@@ -79,6 +82,15 @@ class GroupController extends StateNotifier<AsyncValue> {
           .upsert({'id': getUserId, 'groups': updatedGroups}).eq('id', '2ce67ac6-6f56-4fb9-b5b7-e54b4c9219f7');
 
       log(addValue.toString());
+    }
+  }
+
+  Future<void> groupData() async {
+    if (groupList.isEmpty) {
+      final response = await supabase.from('group').select();
+      groupList = response.map((e) => Group.fromJson(e)).toList();
+      state = AsyncValue.data(groupList);
+      log(groupList.toString());
     }
   }
 }

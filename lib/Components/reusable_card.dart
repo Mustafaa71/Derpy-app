@@ -10,6 +10,7 @@ class ReusableCard extends StatelessWidget {
     required this.description,
     required this.visibilty,
     required this.groupOrEvent,
+    required this.numberOfMember,
     required this.onTap,
   });
 
@@ -19,6 +20,7 @@ class ReusableCard extends StatelessWidget {
   final String visibilty;
   final String groupOrEvent;
   final VoidCallback onTap;
+  final String numberOfMember;
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -35,12 +37,14 @@ class ReusableCard extends StatelessWidget {
           children: [
             ReusableCardImage(
               imagePath: imagePath,
+              topRight: null,
             ),
             ReusableCardContent(
               cardTitle: title,
               cardDescription: description,
               publicOrPrivate: visibilty,
               groupOrEvent: groupOrEvent,
+              numberOfMember: numberOfMember,
             ),
           ],
         ),

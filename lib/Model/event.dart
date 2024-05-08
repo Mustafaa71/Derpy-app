@@ -1,23 +1,23 @@
 class Event {
-  final String id;
   final String eventId;
   final String adminId;
+  final String eventAvatar;
   final String name;
   final String description;
   final String category;
-  final DateTime date;
-  final DateTime timeStart;
-  final DateTime timeEnd;
+  final String date;
+  final String timeStart;
+  final String timeEnd;
   final String location;
   final List<String> members;
-  final int numberOfMembers;
-  final int price;
+  final String numberOfMembers;
+  final String price;
   final bool cancelEvent;
 
   Event({
-    required this.id,
     required this.eventId,
     required this.adminId,
+    required this.eventAvatar,
     required this.name,
     required this.description,
     required this.category,
@@ -33,15 +33,15 @@ class Event {
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      id: json['id'],
       eventId: json['event_id'],
       adminId: json['admin_id'],
+      eventAvatar: json['event_avatar'],
       name: json['name'],
       description: json['description'],
       category: json['category'],
-      date: DateTime.parse(json['date']),
-      timeStart: DateTime.parse(json['time_start']),
-      timeEnd: DateTime.parse(json['time_end']),
+      date: json['date'],
+      timeStart: json['time_start'],
+      timeEnd: json['time_end'],
       location: json['location'],
       members: List<String>.from(json['members']),
       numberOfMembers: json['number_of_members'],
@@ -52,15 +52,15 @@ class Event {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'event_id': eventId,
       'admin_id': adminId,
+      'event_avatar': eventAvatar,
       'name': name,
       'description': description,
       'category': category,
-      'date': date.toIso8601String(),
-      'time_start': timeStart.toIso8601String(),
-      'time_end': timeEnd.toIso8601String(),
+      'date': date,
+      'time_start': timeStart,
+      'time_end': timeEnd,
       'location': location,
       'members': members,
       'number_of_members': numberOfMembers,
