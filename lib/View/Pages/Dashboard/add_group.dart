@@ -8,6 +8,7 @@ import 'package:derpy/Controller/group_controller.dart';
 import 'package:derpy/Controller/image_picker_controller.dart';
 import 'package:derpy/Model/group.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -36,8 +37,6 @@ class AddGroup extends HookConsumerWidget {
 
     final String? getUserId = groupAdmin.getUserId();
 
-    String? imagePath;
-
     const uuid = Uuid();
     final groupId = uuid.v4();
 
@@ -57,11 +56,38 @@ class AddGroup extends HookConsumerWidget {
             style: TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
           ),
           const Divider(color: Colors.blueAccent),
-          Center(
-            child: Avatar(
-              imageUrl: imagePath,
-              onClick: () => imagePickerController.upload(context, false),
-            ),
+          Consumer(
+            builder: (context, ref, child) {
+              final imagePath = ref.watch(ImagePickerController.imagePickerProvider.select((state) => state.value));
+              return imagePath == null
+                  ? Avatar(onClick: () {
+                      imagePickerController.upload(context);
+                    })
+                  : Container(
+                      margin: const EdgeInsets.all(10.0),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        child: Image.network(
+                          'https://huhpecopmraolbvshwdy.supabase.co/storage/v1/object/public/Gg/$imagePath',
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+                            return Center(
+                              child: CircularProgressIndicator.adaptive(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            );
+                          },
+                          width: 150.0,
+                          height: 150.0,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+            },
           ),
           Container(
             decoration:
@@ -72,14 +98,11 @@ class AddGroup extends HookConsumerWidget {
                   controller: titleEditingController,
                   decoration: const InputDecoration(
                     hintText: 'Group Title (required)',
-                    prefixIcon: Icon(
-                      Icons.border_color,
-                      color: Colors.blueAccent,
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
+                    prefixIcon: Icon(Icons.border_color, color: Colors.blueAccent),
+                    border: OutlineInputBorder(borderSide: BorderSide.none),
                   ),
+                  maxLength: 14,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
                 ),
                 const Divider(),
                 TextField(
@@ -94,6 +117,8 @@ class AddGroup extends HookConsumerWidget {
                       borderSide: BorderSide.none,
                     ),
                   ),
+                  maxLength: 40,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
                 ),
                 const Divider(),
                 TextField(
@@ -108,6 +133,8 @@ class AddGroup extends HookConsumerWidget {
                       borderSide: BorderSide.none,
                     ),
                   ),
+                  maxLength: 15,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
                 ),
               ],
             ),
@@ -148,7 +175,7 @@ class AddGroup extends HookConsumerWidget {
                 if (titleEditingController.text.isEmpty ||
                     descriptionEditingController.text.isEmpty ||
                     locationEditingController.text.isEmpty ||
-                    imagePath.toString().isEmpty) {
+                    imagePickerController.imagePath.toString().isEmpty) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -190,6 +217,7 @@ class AddGroup extends HookConsumerWidget {
                   titleEditingController.clear();
                   descriptionEditingController.clear();
                   locationEditingController.clear();
+                  imagePickerController.clearImagePath();
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
                 }

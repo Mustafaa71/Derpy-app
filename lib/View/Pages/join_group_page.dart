@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -10,6 +8,7 @@ class JoinGroupPage extends HookConsumerWidget {
     required this.groupName,
     required this.groupDescription,
     required this.groupLocation,
+    required this.onTap,
     super.key,
   });
 
@@ -17,6 +16,8 @@ class JoinGroupPage extends HookConsumerWidget {
   final String groupName;
   final String groupDescription;
   final String groupLocation;
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,9 +109,7 @@ class JoinGroupPage extends HookConsumerWidget {
             width: double.infinity,
             margin: const EdgeInsets.only(left: 10, right: 10.0, bottom: 40.0),
             child: ElevatedButton(
-              onPressed: () {
-                log('message');
-              },
+              onPressed: onTap,
               style: const ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll(Colors.blueAccent),
               ),

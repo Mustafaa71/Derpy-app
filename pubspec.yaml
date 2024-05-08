@@ -22,6 +22,7 @@ dependencies:
     flutter_hooks: ^0.20.5
     image_picker: ^1.0.7
     uuid: ^3.0.7
+    widget_circular_animator: ^1.0.0
 
 dev_dependencies:
     flutter_test:

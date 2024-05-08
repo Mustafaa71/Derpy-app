@@ -20,6 +20,11 @@ class SearchPage extends StatelessWidget {
         backgroundColor: ColorManager.kBackgroundColor,
       ),
       body: Container(),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Search people',
+        onPressed: () => print('object'),
+        child: const Icon(Icons.search),
+      ),
     );
   }
 }

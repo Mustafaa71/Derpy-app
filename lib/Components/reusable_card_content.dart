@@ -10,12 +10,14 @@ class ReusableCardContent extends StatelessWidget {
     required this.cardDescription,
     required this.publicOrPrivate,
     required this.groupOrEvent,
+    required this.numberOfMember,
   });
 
   final String cardTitle;
   final String cardDescription;
   final String publicOrPrivate;
   final String groupOrEvent;
+  final String numberOfMember;
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -28,7 +30,7 @@ class ReusableCardContent extends StatelessWidget {
               title: cardTitle,
               style: TextStyleManager(
                 kColor: Colors.white,
-                kFontSize: 20.0,
+                kFontSize: 19.0,
                 kFontWeight: FontWeight.bold,
               ),
             ),
@@ -51,7 +53,7 @@ class ReusableCardContent extends StatelessWidget {
               ],
             ),
             const Divider(),
-            const Text('10/15'),
+            Text(numberOfMember),
           ],
         ),
       ),

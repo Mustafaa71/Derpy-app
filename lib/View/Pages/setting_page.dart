@@ -1,4 +1,5 @@
 import 'package:derpy/Components/buttons/log_out_button.dart';
+import 'package:derpy/Components/settings/user_info.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:flutter/material.dart';
@@ -10,22 +11,29 @@ class SettingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authController = ref.watch(AuthController.authControllerProvider.notifier);
+    final shortCut = authController.getName().substring(0, 1).toString().toUpperCase();
+    final name = authController.getName().toUpperCase();
+    final userName = authController.getUserName();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Personal Info', style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold)),
         elevation: 0.0,
         backgroundColor: ColorManager.kBackgroundColor,
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(20.0),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
             /// Setting First Section .....
-            AccountSetting(),
-            SizedBox(height: 40.0),
+            UserInfo(
+              userLetterShortCut: shortCut ?? 'D',
+              name: name ?? 'Derpy',
+              userName: userName ?? '',
+            ),
+            const SizedBox(height: 40.0),
 
             /// Account Setting ....
-            Column(
+            const Column(
               children: [
                 Align(
                   alignment: Alignment.topLeft,
@@ -43,21 +51,21 @@ class SettingPage extends HookConsumerWidget {
                 Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
               ],
             ),
-            Spacer(),
+            const Spacer(),
 
             ///Logout Button ....
-            LogoutButton(
+            const LogoutButton(
               title: 'Delete Account',
-              buttonColor: Color.fromARGB(160, 255, 204, 75),
+              buttonColor: Color.fromARGB(104, 255, 201, 66),
               borderColor: Color(0xFFF9D949),
               textButtonColor: Color(0xFFF9D949),
             ),
 
             LogoutButton(
               title: 'Logout',
-              buttonColor: Color.fromARGB(157, 179, 18, 18),
-              borderColor: Color.fromARGB(255, 252, 42, 42),
-              textButtonColor: Color.fromARGB(255, 252, 42, 42),
+              buttonColor: const Color(0xFFea3323).withOpacity(0.2),
+              borderColor: const Color(0xffea3323),
+              textButtonColor: const Color(0xffea3323),
             ),
           ],
         ),
