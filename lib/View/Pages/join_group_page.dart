@@ -115,7 +115,11 @@ class JoinGroupPage extends HookConsumerWidget {
               ),
               child: Text(
                 'Join Group',
-                style: TextStyleManager(kColor: Colors.black, kFontSize: 25.0, kFontWeight: FontWeight.bold),
+                style: TextStyleManager(
+                  kColor: Colors.black,
+                  kFontSize: 25.0,
+                  kFontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

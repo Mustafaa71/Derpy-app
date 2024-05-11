@@ -1,19 +1,23 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:derpy/Model/event.dart';
 import 'package:derpy/Model/group.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class GroupController extends StateNotifier<AsyncValue> {
+class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
   final supabase = Supabase.instance.client;
   List<Group> groupList = [];
+  StreamSubscription<SupabaseStreamEvent>? subscription;
+
   static final groupControllerProvider = StateNotifierProvider<GroupController, AsyncValue>((ref) {
     return GroupController();
   });
   GroupController() : super(const AsyncValue.loading()) {
-    groupData();
+    getGroupData();
   }
 
   Future<String> openGallery() async {
@@ -85,12 +89,25 @@ class GroupController extends StateNotifier<AsyncValue> {
     }
   }
 
-  Future<void> groupData() async {
-    if (groupList.isEmpty) {
-      final response = await supabase.from('group').select();
-      groupList = response.map((e) => Group.fromJson(e)).toList();
-      state = AsyncValue.data(groupList);
-      log(groupList.toString());
-    }
+  void getGroupData() {
+    state = const AsyncValue.loading();
+    subscription = supabase.from('group').stream(primaryKey: ['id']).listen(
+      (event) {
+        final groups = event.map<Group>((e) => Group.fromJson(e)).toList();
+        state = AsyncValue.data(groups);
+      },
+      onError: (e) {
+        state = AsyncValue.error(e, StackTrace.current);
+        debugPrint('Error Regarding To Supabase Stream: $e');
+        return const Icon(Icons.warning);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    subscription?.cancel();
+    super.dispose();
   }
 }

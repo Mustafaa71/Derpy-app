@@ -232,6 +232,7 @@ class AddEvent extends HookConsumerWidget {
                         cancelEvent: false,
                       );
                       await supabase.from('event').insert([addEvent.toJson()]);
+                      imagePickerController.clearImagePath();
                       if (!context.mounted) return;
                       Navigator.of(context).pop();
                     });
