@@ -1,5 +1,4 @@
 import 'package:derpy/Constants/color_manager.dart';
-import 'package:derpy/View/Pages/Auth/sign_up.dart';
 import 'package:derpy/View/Pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,7 +12,7 @@ class Derpy extends HookConsumerWidget {
     final supabase = Supabase.instance.client;
     final user = supabase.auth.currentUser;
 
-    final Widget widgetRefrense = user != null ? const MainPage() : const SignUp();
+    final Widget widgetRefrense = user != null ? const MainPage() : const MainPage();
     return MaterialApp(
       home: widgetRefrense,
       theme: ThemeData.dark().copyWith(

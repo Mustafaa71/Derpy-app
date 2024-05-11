@@ -28,14 +28,19 @@ class AuthController extends StateNotifier<AsyncValue> {
     return supabase.auth.currentSession?.user.id;
   }
 
-  String getName() {
-    final name = supabase.auth.currentUser?.userMetadata;
-    return name?['data']['name'];
+  String? getName() {
+    // Access user metadata safely
+    final userMetadata = supabase.auth.currentUser?.userMetadata;
+    if (userMetadata != null && userMetadata.containsKey('data')) {
+      return userMetadata['data']['name'];
+    }
+
+    return null;
   }
 
   String getUserName() {
     final userMetadata = supabase.auth.currentUser?.userMetadata;
-    return userMetadata != null ? userMetadata['data']['userName'] : 'Gg';
+    return userMetadata != null ? userMetadata['data']['userName'] : '@Derpy';
   }
 
   Future<void> insertDemoData() async {

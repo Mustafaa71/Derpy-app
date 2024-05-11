@@ -11,9 +11,10 @@ class SettingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authController = ref.watch(AuthController.authControllerProvider.notifier);
-    final shortCut = authController.getName().substring(0, 1).toString().toUpperCase();
-    final name = authController.getName().toUpperCase();
-    final userName = authController.getUserName();
+    final name = authController.getName()?.toUpperCase() ?? 'Derpy';
+    final shortCut = name.isNotEmpty ? name.substring(0, 1) : 'D';
+    final userName = authController.getUserName() ?? '';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Personal Info', style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold)),
@@ -24,52 +25,63 @@ class SettingPage extends HookConsumerWidget {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            /// Setting First Section .....
             UserInfo(
-              userLetterShortCut: shortCut ?? 'D',
-              name: name ?? 'Derpy',
-              userName: userName ?? '',
+              userLetterShortCut: shortCut,
+              name: name,
+              userName: userName,
             ),
             const SizedBox(height: 40.0),
-
-            /// Account Setting ....
-            const Column(
-              children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'Account',
-                    style: TextStyle(color: Color(0xFF7e7f81), fontSize: 17.0),
-                  ),
-                ),
-                Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
-                OtherSetting(icon: Icons.person_outline, label: 'Edit Personal Details'),
-                Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
-                OtherSetting(icon: Icons.color_lens_outlined, label: 'Theme'),
-                Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
-                OtherSetting(icon: Icons.account_balance_wallet_outlined, label: 'Invoice'),
-                Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
-              ],
-            ),
+            _buildAccountSettings(),
             const Spacer(),
-
-            ///Logout Button ....
-            const LogoutButton(
-              title: 'Delete Account',
-              buttonColor: Color.fromARGB(104, 255, 201, 66),
-              borderColor: Color(0xFFF9D949),
-              textButtonColor: Color(0xFFF9D949),
-            ),
-
-            LogoutButton(
-              title: 'Logout',
-              buttonColor: const Color(0xFFea3323).withOpacity(0.2),
-              borderColor: const Color(0xffea3323),
-              textButtonColor: const Color(0xffea3323),
-            ),
+            _buildLogoutSection(ref),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAccountSettings() {
+    return const Column(
+      children: [
+        Align(
+          alignment: Alignment.topLeft,
+          child: Text(
+            'Account',
+            style: TextStyle(color: Color(0xFF7e7f81), fontSize: 17.0),
+          ),
+        ),
+        Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
+        OtherSetting(icon: Icons.person_outline, label: 'Edit Personal Details'),
+        Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
+        OtherSetting(icon: Icons.color_lens_outlined, label: 'Theme'),
+        Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
+        OtherSetting(icon: Icons.account_balance_wallet_outlined, label: 'Invoice'),
+        Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
+      ],
+    );
+  }
+
+  Widget _buildLogoutSection(WidgetRef ref) {
+    final authController = ref.read(AuthController.authControllerProvider.notifier);
+
+    return Column(
+      children: [
+        const LogoutButton(
+          title: 'Delete Account',
+          buttonColor: Color.fromARGB(104, 255, 201, 66),
+          borderColor: Color(0xFFF9D949),
+          textButtonColor: Color(0xFFF9D949),
+        ),
+        InkWell(
+          onTap: () => authController.signOut(),
+          child: LogoutButton(
+            title: 'Logout',
+            buttonColor: const Color(0xFFea3323).withOpacity(0.2),
+            borderColor: const Color(0xffea3323),
+            textButtonColor: const Color(0xffea3323),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -77,6 +89,7 @@ class SettingPage extends HookConsumerWidget {
 class OtherSetting extends StatelessWidget {
   final IconData icon;
   final String label;
+
   const OtherSetting({
     super.key,
     required this.icon,
@@ -99,54 +112,6 @@ class OtherSetting extends StatelessWidget {
         const Spacer(),
         const Icon(Icons.chevron_right_sharp, size: 35.0, color: Colors.white),
       ],
-    );
-  }
-}
-
-class AccountSetting extends StatelessWidget {
-  const AccountSetting({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(15.0),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(20.0)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            color: const Color(0xFF54585f),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Text(
-                'M',
-                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          const SizedBox(width: 20.0),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Mustafa Yassin',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '@Mustafa71',
-                style: TextStyle(color: Colors.grey, fontSize: 16.0),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
