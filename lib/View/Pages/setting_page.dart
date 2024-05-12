@@ -1,9 +1,18 @@
+import 'dart:developer';
+
 import 'package:derpy/Components/buttons/log_out_button.dart';
+import 'package:derpy/Components/other_setting.dart';
+import 'package:derpy/Components/register_dashboard.dart';
 import 'package:derpy/Components/settings/user_info.dart';
 import 'package:derpy/Constants/color_manager.dart';
+import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
+import 'package:derpy/Model/user_information.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SettingPage extends HookConsumerWidget {
   const SettingPage({super.key});
@@ -11,9 +20,9 @@ class SettingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authController = ref.watch(AuthController.authControllerProvider.notifier);
-    final name = authController.getName()?.toUpperCase() ?? 'Derpy';
-    final shortCut = name.isNotEmpty ? name.substring(0, 1) : 'D';
-    final userName = authController.getUserName() ?? '';
+    final isLoading = useState<bool>(false);
+    final supabase = Supabase.instance.client;
+    final currentUser = supabase.auth.currentUser!.id;
 
     return Scaffold(
       appBar: AppBar(
@@ -21,26 +30,131 @@ class SettingPage extends HookConsumerWidget {
         elevation: 0.0,
         backgroundColor: ColorManager.kBackgroundColor,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            UserInfo(
-              userLetterShortCut: shortCut,
-              name: name,
-              userName: userName,
+      body: isLoading.value == true
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  FutureBuilder<UserInformation>(
+                    future: authController.fetchUserName(currentUser),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else if (snapshot.hasData) {
+                          return UserInfo(
+                            userLetterShortCut: snapshot.data!.name!.characters.first.toUpperCase(),
+                            name: snapshot.data!.name,
+                            userName: snapshot.data!.userName,
+                          );
+                        }
+                      }
+                      return const UserInfo(
+                        userLetterShortCut: '   ',
+                        name: '',
+                        userName: '',
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 35.0),
+                  supabase.auth.currentUser == null
+                      ? Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.admin_panel_settings,
+                                size: 80.0,
+                                color: Colors.redAccent,
+                              ),
+                              Text(
+                                'Register to Access Derpy Features',
+                                style: TextStyleManager(
+                                  kColor: Colors.redAccent,
+                                  kFontSize: 30.0,
+                                  kFontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12.0),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                        context: context,
+                                        builder: (context) {
+                                          return const RegisterDashboard();
+                                        });
+                                  },
+                                  style: const ButtonStyle(),
+                                  child: Text(
+                                    'Join Us',
+                                    style: TextStyleManager(
+                                        kColor: Colors.blueAccent, kFontSize: 25.0, kFontWeight: FontWeight.normal),
+                                  ))
+                            ],
+                          ),
+                        )
+                      : buildAccountSettings(),
+                  const Spacer(),
+                  supabase.auth.currentUser == null
+                      ? const SizedBox.shrink()
+                      : buildLogoutSection(ref, context, isLoading),
+                ],
+              ),
             ),
-            const SizedBox(height: 40.0),
-            _buildAccountSettings(),
-            const Spacer(),
-            _buildLogoutSection(ref),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildAccountSettings() {
+  void ggOut(ValueNotifier<bool> isLoading, BuildContext context, WidgetRef ref) async {
+    isLoading.value = true;
+    const webClientId = '497698355565-41mnh8g4j4sr72bj8a6v41hv5lsfbiaf.apps.googleusercontent.com';
+
+    const iosClientId = '497698355565-4prgkkbvra2ndgjga1n7353dqi2jji7b.apps.googleusercontent.com';
+
+    try {
+      final authController = ref.read(AuthController.authControllerProvider.notifier);
+      await authController.signOut();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: iosClientId,
+        serverClientId: webClientId,
+      );
+      googleSignIn.signOut();
+    } catch (e) {
+      log(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to sign out: ${e.toString()}')));
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Widget buildLogoutSection(WidgetRef ref, BuildContext context, ValueNotifier<bool> isLoading) {
+    if (isLoading.value) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Column(
+      children: [
+        const LogoutButton(
+          title: 'Delete Account',
+          buttonColor: Color.fromARGB(104, 255, 201, 66),
+          borderColor: Color(0xFFF9D949),
+          textButtonColor: Color(0xFFF9D949),
+        ),
+        InkWell(
+          onTap: () => ggOut(isLoading, context, ref),
+          child: LogoutButton(
+            title: 'Logout',
+            buttonColor: const Color(0xFFea3323).withOpacity(0.2),
+            borderColor: const Color(0xffea3323),
+            textButtonColor: const Color(0xffea3323),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildAccountSettings() {
     return const Column(
       children: [
         Align(
@@ -57,60 +171,6 @@ class SettingPage extends HookConsumerWidget {
         Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
         OtherSetting(icon: Icons.account_balance_wallet_outlined, label: 'Invoice'),
         Divider(thickness: 0.5, color: Color(0xFF7e7f81)),
-      ],
-    );
-  }
-
-  Widget _buildLogoutSection(WidgetRef ref) {
-    final authController = ref.read(AuthController.authControllerProvider.notifier);
-
-    return Column(
-      children: [
-        const LogoutButton(
-          title: 'Delete Account',
-          buttonColor: Color.fromARGB(104, 255, 201, 66),
-          borderColor: Color(0xFFF9D949),
-          textButtonColor: Color(0xFFF9D949),
-        ),
-        InkWell(
-          onTap: () => authController.signOut(),
-          child: LogoutButton(
-            title: 'Logout',
-            buttonColor: const Color(0xFFea3323).withOpacity(0.2),
-            borderColor: const Color(0xffea3323),
-            textButtonColor: const Color(0xffea3323),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class OtherSetting extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const OtherSetting({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 25.0, color: Colors.white),
-        const SizedBox(width: 12.0),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20.0,
-          ),
-        ),
-        const Spacer(),
-        const Icon(Icons.chevron_right_sharp, size: 35.0, color: Colors.white),
       ],
     );
   }

@@ -37,7 +37,7 @@ class ReusableButton extends StatelessWidget {
           child: Text(
             label,
             style: TextStyleManager(
-              kColor: Colors.black,
+              kColor: textColor,
               kFontSize: 15.0,
               kFontWeight: FontWeight.bold,
             ),

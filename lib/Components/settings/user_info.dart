@@ -8,9 +8,9 @@ class UserInfo extends StatelessWidget {
     required this.userName,
   });
 
-  final String userLetterShortCut;
-  final String userName;
-  final String name;
+  final String? userLetterShortCut;
+  final String? userName;
+  final String? name;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -25,7 +25,7 @@ class UserInfo extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
               child: Text(
-                userLetterShortCut,
+                userLetterShortCut!,
                 style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
               ),
             ),
@@ -35,7 +35,7 @@ class UserInfo extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                name,
+                name!,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20.0,
@@ -43,7 +43,7 @@ class UserInfo extends StatelessWidget {
                 ),
               ),
               Text(
-                userName,
+                userName!,
                 style: const TextStyle(color: Colors.grey, fontSize: 16.0),
               ),
             ],
