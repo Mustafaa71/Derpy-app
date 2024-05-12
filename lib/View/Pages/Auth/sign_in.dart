@@ -45,7 +45,10 @@ class SignIn extends HookConsumerWidget {
                       email: emailController.text.trim(),
                       password: passwordController.text.trim(),
                     );
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: ((context) => const MainPage())));
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const MainPage()),
+                      (Route route) => false,
+                    );
                   } catch (e) {
                     log(e.toString());
                   }

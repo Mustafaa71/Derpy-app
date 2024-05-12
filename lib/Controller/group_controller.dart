@@ -89,6 +89,46 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  ///<-------------- Delete Group -------------->
+  ///
+  Future<void> removeGroup(String groupId) async {
+    final response = await supabase.from('group').delete().eq('group_id', groupId);
+    state = AsyncData(response);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchUsersWithGroup(String groupId) async {
+    try {
+      final response = await supabase.from('user').select('id, member_of').contains('member_of', [groupId]);
+
+      log('response: $response');
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      log('Exception fetching users: $e');
+      return [];
+    }
+  }
+
+  Future<void> removeGroupIdFromUsers(String groupId) async {
+    final users = await fetchUsersWithGroup(groupId);
+    for (var user in users) {
+      List<String> updatedMemberOf = List<String>.from(user['member_of']);
+      updatedMemberOf.removeWhere((id) => id == groupId);
+
+      try {
+        final response = await supabase.from('user').update({'member_of': updatedMemberOf}).eq('id', user['id']);
+
+        if (response.error != null) {
+          log('Error updating user ${user['id']}: ${response.error!.message}');
+        } else {
+          log('Updated user ${user['id']} successfully');
+        }
+      } catch (e) {
+        log('Exception updating user ${user['id']}: $e');
+      }
+    }
+  }
+
   void getGroupData() {
     state = const AsyncValue.loading();
     subscription = supabase.from('group').stream(primaryKey: ['id']).listen(
