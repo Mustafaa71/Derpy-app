@@ -5,7 +5,6 @@ import 'package:derpy/Model/event.dart';
 import 'package:derpy/Model/group.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
@@ -18,19 +17,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
   });
   GroupController() : super(const AsyncValue.loading()) {
     getGroupData();
-  }
-
-  Future<String> openGallery() async {
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    try {
-      if (image != null) {
-        return image.path;
-      }
-    } catch (e) {
-      print(e);
-    }
-    return 'null';
+    fetchMyOwnGroups();
   }
 
   Future<void> createGroup(
@@ -62,30 +49,106 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     state = AsyncData(response);
   }
 
+  /// This Function add group_id to groups column supabase[created group]...
   Future<void> addGroupIdToApiUserList(
     String newGroupId,
-    Object getUserId,
+    String getUserId,
   ) async {
-    final checkSupabaseResponse = await supabase.from('user').select('groups').eq('id', getUserId.toString()).single();
+    log('Starting to add group ID: $newGroupId to user ID: $getUserId');
 
-    log(checkSupabaseResponse.toString());
+    // Fetch the current list of groups for the user
+    final checkSupabaseResponse = await supabase.from('user').select('groups').eq('id', getUserId).single();
 
+    log('Response from checking current groups: ${checkSupabaseResponse.toString()}');
+
+    // Safely access the 'member_of' field
     final List<dynamic>? currentGroups = checkSupabaseResponse['groups'];
 
     if (currentGroups != null) {
+      // If the user already has groups, append the new group ID
       final List<dynamic> updatedGroups = [...currentGroups, newGroupId];
+      log('Updating existing groups with: $updatedGroups');
 
-      final addValue = await supabase.from('user').update({'groups': updatedGroups}).eq('id', getUserId.toString());
+      final addValue = await supabase.from('user').update({'groups': updatedGroups}).eq('id', getUserId);
 
-      log(addValue.toString());
+      log('Update response: ${addValue.toString()}');
     } else {
+      // If the user has no groups, create the field with the new group ID
       final List<dynamic> updatedGroups = [newGroupId];
+      log('User has no current groups. Creating new group list with: $updatedGroups');
 
-      final addValue = await supabase
-          .from('user')
-          .upsert({'id': getUserId, 'groups': updatedGroups}).eq('id', '2ce67ac6-6f56-4fb9-b5b7-e54b4c9219f7');
+      final addValue =
+          await supabase.from('user').upsert({'id': getUserId, 'groups': updatedGroups}).eq('id', getUserId);
 
-      log(addValue.toString());
+      log('Upsert response: ${addValue.toString()}');
+    }
+  }
+
+  Future<void> addMeAsAmember(String userId, String newGroupId) async {
+    log('Function starts ...');
+    state = const AsyncLoading();
+    log('Starting to add group ID: $newGroupId to user ID: $userId\n');
+    try {
+      log('Waiting for supabase Response: ....\n');
+
+      final response = await supabase.from('user').select('member_of').eq('id', userId).single();
+
+      log('addMeAsAmember function:\n supabase Res: ${response.toString()}');
+      final List<dynamic>? currentMemberOf = response['member_of'];
+
+      if (currentMemberOf != null) {
+        final List<dynamic> updatedMemberOf = [...currentMemberOf, newGroupId];
+        log('Updating existing member_of with: $updatedMemberOf');
+
+        final addValue = await supabase.from('user').update({'member_of': updatedMemberOf}).eq('id', newGroupId);
+
+        log('Update response: ${addValue.toString()}');
+      } else {
+        final List<dynamic> updatedMemberOf = [newGroupId];
+        log('User has no current member_of. Creating new member_of list with: $updatedMemberOf');
+
+        final addValue =
+            await supabase.from('user').upsert({'id': userId, 'member_of': updatedMemberOf}).eq('id', userId);
+
+        log('Upsert response: ${addValue.toString()}');
+      }
+    } catch (e) {
+      log('Error occur in Group Controller [addMeAsAmember function]');
+    }
+  }
+
+  /// This Function adds the userId into a groups into a group column
+  ///
+  Future<void> addUserIdIntoGroups(String userId, String newGroupId) async {
+    log('Function starts ...');
+    state = const AsyncLoading();
+    log('Starting to add group ID: $newGroupId to user ID: $userId\n');
+    try {
+      log('Waiting for supabase Response: ....\n');
+
+      final response = await supabase.from('group').select('members').eq('id', userId).single();
+
+      log('addMeAsAmember function:\n supabase Res: ${response.toString()}');
+      final List<dynamic>? currentMemberOf = response['members'];
+
+      if (currentMemberOf != null) {
+        final List<dynamic> updatedMemberOf = [...currentMemberOf, newGroupId];
+        log('Updating existing member_of with: $updatedMemberOf');
+
+        final addValue = await supabase.from('group').update({'members': updatedMemberOf}).eq('id', newGroupId);
+
+        log('Update response: ${addValue.toString()}');
+      } else {
+        final List<dynamic> updatedMemberOf = [newGroupId];
+        log('User has no current member_of. Creating new member_of list with: $updatedMemberOf');
+
+        final addValue =
+            await supabase.from('group').upsert({'id': userId, 'members': updatedMemberOf}).eq('id', userId);
+
+        log('Upsert response: ${addValue.toString()}');
+      }
+    } catch (e) {
+      log('Error occur in Group Controller [addUserIdIntoGroups function]');
     }
   }
 
@@ -142,6 +205,19 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
         return const Icon(Icons.warning);
       },
     );
+  }
+
+  void fetchMyOwnGroups() async {
+    state = const AsyncLoading();
+    try {
+      subscription = supabase.from('group').stream(primaryKey: ['id']).listen((event) {
+        final myGroups = event.map((e) => Group.fromJson(e)).toList();
+        state = AsyncValue.data(myGroups);
+      });
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+      log('Error from groupController <fetchMyGroups>:$e');
+    }
   }
 
   @override

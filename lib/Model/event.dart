@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 class Event {
   final String eventId;
   final String adminId;
@@ -5,9 +8,9 @@ class Event {
   final String name;
   final String description;
   final String category;
-  final String date;
-  final String timeStart;
-  final String timeEnd;
+  final DateTime date;
+  final TimeOfDay timeStart;
+  final TimeOfDay timeEnd;
   final String location;
   final List<String> members;
   final String numberOfMembers;
@@ -39,9 +42,11 @@ class Event {
       name: json['name'],
       description: json['description'],
       category: json['category'],
-      date: json['date'],
-      timeStart: json['time_start'],
-      timeEnd: json['time_end'],
+      date: DateTime.parse(json['date']),
+      timeStart: TimeOfDay(
+          hour: int.parse(json['time_start'].split(":")[0]), minute: int.parse(json['time_start'].split(":")[1])),
+      timeEnd:
+          TimeOfDay(hour: int.parse(json['time_end'].split(":")[0]), minute: int.parse(json['time_end'].split(":")[1])),
       location: json['location'],
       members: List<String>.from(json['members']),
       numberOfMembers: json['number_of_members'],
@@ -51,6 +56,10 @@ class Event {
   }
 
   Map<String, dynamic> toJson() {
+    final dateFormat = DateFormat('yyyy-MM-dd'); // For date formatting
+    final timeFormat = (TimeOfDay time) =>
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'; // For time formatting
+
     return {
       'event_id': eventId,
       'admin_id': adminId,
@@ -58,9 +67,9 @@ class Event {
       'name': name,
       'description': description,
       'category': category,
-      'date': date,
-      'time_start': timeStart,
-      'time_end': timeEnd,
+      'date': dateFormat.format(date), // Convert DateTime to String
+      'time_start': timeFormat(timeStart), // Convert TimeOfDay to String
+      'time_end': timeFormat(timeEnd), // Convert TimeOfDay to String
       'location': location,
       'members': members,
       'number_of_members': numberOfMembers,

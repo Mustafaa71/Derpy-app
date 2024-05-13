@@ -1,7 +1,7 @@
 import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/Model/registration.dart';
-import 'package:derpy/View/Pages/main_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SignUp extends HookConsumerWidget {
@@ -14,6 +14,7 @@ class SignUp extends HookConsumerWidget {
     final passwordController = TextEditingController();
     final userNameController = TextEditingController();
     final nameController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign Up'),
@@ -35,31 +36,35 @@ class SignUp extends HookConsumerWidget {
             ),
             const SizedBox(height: 20.0),
             TextFormField(
-              controller: userNameController,
+              controller: nameController,
               decoration: const InputDecoration(labelText: 'Name'),
             ),
             const SizedBox(height: 20.0),
             TextFormField(
-              controller: nameController,
+              controller: userNameController,
               decoration: const InputDecoration(labelText: 'Username'),
             ),
             const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () {
-                signUpController.handleSignUp(
-                  user: Registration(
-                    nameController.text,
-                    userNameController.text,
-                    emailController.text,
-                    passwordController.text,
-                  ),
-                  onSuccess: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MainPage()));
+            Consumer(
+              builder: (context, WidgetRef ref, child) {
+                return ElevatedButton(
+                  onPressed: () async {
+                    await signUpController.handleSignUp(
+                        user: Registration(
+                          nameController.text,
+                          userNameController.text,
+                          emailController.text,
+                          passwordController.text,
+                        ),
+                        onSuccess: () {
+                          useState(Navigator.of(context).pop());
+                        });
+                    await signUpController.insertDemoData();
                   },
+                  child: const Text('Sign up'),
                 );
               },
-              child: const Text('Sign Up'),
-            ),
+            )
           ],
         ),
       ),
