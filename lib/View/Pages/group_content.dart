@@ -4,6 +4,7 @@ import 'package:derpy/Components/buttons/reusable_button.dart';
 import 'package:derpy/Components/reusable_card_image.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
+import 'package:derpy/Controller/group_controller.dart';
 import 'package:derpy/Model/event.dart';
 import 'package:derpy/View/Pages/add_event.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class GroupContent extends HookConsumerWidget {
     final isLoading = useState<bool>(true);
     const oddCardColor = Color(0xFF122932);
     const evenCardColor = Color(0xFF285943);
+    final groupController = ref.watch(GroupController.groupControllerProvider.notifier);
 
     StreamSubscription<SupabaseStreamEvent>? getEvents() {
       isLoading.value = true;

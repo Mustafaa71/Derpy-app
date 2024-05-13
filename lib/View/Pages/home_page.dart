@@ -7,7 +7,6 @@ import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/View/Pages/non_user_screen.dart';
 import 'package:derpy/View/Pages/user_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -22,58 +21,50 @@ class HomePage extends HookConsumerWidget {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('MMM d, yyyy').format(now).toUpperCase();
     final authController = ref.watch(AuthController.authControllerProvider.notifier);
-    final String? getName = authController.getName();
-    log('getName: $getName');
-    final userNameShortCut = getName?.isNotEmpty ?? false ? getName![0].toUpperCase() : 'D';
-    final userName = getName?.isNotEmpty ?? false ? getName! : 'In Derpy';
     final supabase = Supabase.instance.client;
-    late GoogleSignInAccount googleUseew;
+    final getName = authController.getName();
+    final shortCut = getName?.characters.first.toUpperCase() ?? 'D';
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 25.0),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Consumer(
-              builder: (context, ref, child) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          color: const Color(0xFF54585f),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                            child: Text(
-                              userNameShortCut,
-                              style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-                            ),
-                          ),
+                    Container(
+                      color: const Color(0xFF54585f),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                        child: Text(
+                          shortCut,
+                          style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(width: 6.0),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Derpy',
-                              style:
-                                  TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Welcome, $userName',
-                            ),
-                          ],
+                      ),
+                    ),
+                    const SizedBox(width: 6.0),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Derpy',
+                          style: TextStyleManager(kColor: Colors.white, kFontSize: 15.0, kFontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Welcome, ${getName ?? 'Derpy'}',
                         ),
                       ],
                     ),
-                    const Icon(
-                      Icons.notifications,
-                      size: 32.0,
-                    ),
                   ],
-                );
-              },
+                ),
+                const Icon(
+                  Icons.notifications,
+                  size: 32.0,
+                ),
+              ],
             ),
             const SizedBox(height: 6.0),
             Text(formattedDate),
@@ -95,7 +86,7 @@ class HomePage extends HookConsumerWidget {
                 ],
               ),
             ),
-            supabase.auth.currentSession != null ? const UserScreen() : const NonUserScreen(),
+            supabase.auth.currentSession != null ? const UserScreen() : const NonUserScreen()
           ]),
         ),
       ),

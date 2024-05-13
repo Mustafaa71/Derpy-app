@@ -11,6 +11,7 @@ class UserInfo extends StatelessWidget {
   final String? userLetterShortCut;
   final String? userName;
   final String? name;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,22 +32,25 @@ class UserInfo extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 20.0),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name!,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            // This will ensure the column takes only the available space
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(
-                userName!,
-                style: const TextStyle(color: Colors.grey, fontSize: 16.0),
-              ),
-            ],
+                Text(
+                  userName!,
+                  style: const TextStyle(color: Colors.grey, fontSize: 16.0),
+                ),
+              ],
+            ),
           ),
         ],
       ),

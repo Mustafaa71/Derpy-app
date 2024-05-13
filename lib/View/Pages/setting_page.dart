@@ -7,7 +7,6 @@ import 'package:derpy/Components/settings/user_info.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
-import 'package:derpy/Model/user_information.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -22,7 +21,10 @@ class SettingPage extends HookConsumerWidget {
     final authController = ref.watch(AuthController.authControllerProvider.notifier);
     final isLoading = useState<bool>(false);
     final supabase = Supabase.instance.client;
-    final currentUser = supabase.auth.currentUser!.id;
+    final getName = authController.getName() ?? 'Derpy';
+    final shortCut = (getName.isNotEmpty ? getName.characters.first.toUpperCase() : 'D');
+    final getUserName = authController.getUserName();
+    final userName = getUserName!.isNotEmpty ? getUserName : 'Derpy';
 
     return Scaffold(
       appBar: AppBar(
@@ -36,26 +38,10 @@ class SettingPage extends HookConsumerWidget {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  FutureBuilder<UserInformation>(
-                    future: authController.fetchUserName(currentUser),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        } else if (snapshot.hasData) {
-                          return UserInfo(
-                            userLetterShortCut: snapshot.data!.name!.characters.first.toUpperCase(),
-                            name: snapshot.data!.name,
-                            userName: snapshot.data!.userName,
-                          );
-                        }
-                      }
-                      return const UserInfo(
-                        userLetterShortCut: '   ',
-                        name: '',
-                        userName: '',
-                      );
-                    },
+                  UserInfo(
+                    userLetterShortCut: shortCut,
+                    name: getName,
+                    userName: userName,
                   ),
                   const SizedBox(height: 35.0),
                   supabase.auth.currentUser == null

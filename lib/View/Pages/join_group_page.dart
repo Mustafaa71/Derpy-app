@@ -16,7 +16,6 @@ class JoinGroupPage extends HookConsumerWidget {
   final String groupName;
   final String groupDescription;
   final String groupLocation;
-
   final VoidCallback onTap;
 
   @override

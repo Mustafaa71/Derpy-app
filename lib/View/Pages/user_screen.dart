@@ -1,5 +1,6 @@
 import 'package:derpy/Components/register_dashboard.dart';
 import 'package:derpy/Components/reusable_card.dart';
+import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/Controller/group_controller.dart';
 import 'package:derpy/View/Pages/group_content.dart';
 import 'package:derpy/View/Pages/join_group_page.dart';
@@ -15,11 +16,16 @@ class UserScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final supabase = Supabase.instance.client;
+    final groupController = ref.watch(GroupController.groupControllerProvider.notifier);
+    final authController = ref.watch(AuthController.authControllerProvider.notifier);
+    final getUserId = authController.getUserId();
     return Expanded(
       child: Consumer(
         builder: (context, ref, child) {
           final groupListAsyncValue = ref.watch(GroupController.groupControllerProvider);
           return groupListAsyncValue.when(
+            skipLoadingOnRefresh: false,
+            skipLoadingOnReload: true,
             data: (groupList) {
               if (groupList.isEmpty) {
                 return const Center(
@@ -51,14 +57,18 @@ class UserScreen extends HookConsumerWidget {
                               groupDescription: data.description,
                               groupLocation: data.location,
                               onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => GroupContent(
-                                      groupName: data.name,
-                                      groupImage: hh,
-                                    ),
-                                  ),
-                                );
+                                groupController.addMeAsAmember(getUserId.toString(), data.id);
+                                groupController.addUserIdIntoGroups(getUserId.toString(), data.id);
+                                Navigator.of(context)
+                                    .push(
+                                      MaterialPageRoute(
+                                        builder: (context) => GroupContent(
+                                          groupName: data.name,
+                                          groupImage: hh,
+                                        ),
+                                      ),
+                                    )
+                                    .then((value) => ref.refresh(GroupController.groupControllerProvider));
                               },
                             ),
                           ),
@@ -77,7 +87,7 @@ class UserScreen extends HookConsumerWidget {
                 itemCount: groupList.length,
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator.adaptive()),
+            loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Text('Error: $error'),
           );
         },
