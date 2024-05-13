@@ -5,7 +5,9 @@ import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/Controller/image_picker_controller.dart';
 import 'package:derpy/Model/event.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,14 +23,15 @@ class AddEvent extends HookConsumerWidget {
     final description = TextEditingController();
     final location = TextEditingController();
     final category = TextEditingController();
-    final date = TextEditingController();
-    final startingTime = TextEditingController();
-    final endingTime = TextEditingController();
     final numberOfMember = TextEditingController();
     final totalPrice = TextEditingController();
     const uuid = Uuid();
     final eventUuid = uuid.v4();
     final String? eventAdmin = authController.getUserId();
+    final eventDate = useState<DateTime?>(null);
+    final eventStartingTime = useState<TimeOfDay?>(null);
+    final eventEndingTime = useState<TimeOfDay?>(null);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Event Information'),
@@ -141,42 +144,78 @@ class AddEvent extends HookConsumerWidget {
                       ),
                       const Divider(),
                       TextField(
-                        controller: date,
-                        decoration: const InputDecoration(
-                          hintText: 'Date (Required)',
-                          prefixIcon: Icon(
-                            Icons.dataset,
+                        readOnly: true,
+                        onTap: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: eventDate.value ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2025),
+                            initialDatePickerMode: DatePickerMode.day,
+                          );
+                          if (picked != null && picked != eventDate.value) {
+                            eventDate.value = picked;
+                          }
+                        },
+                        decoration: InputDecoration(
+                          hintText: eventDate.value != null
+                              ? DateFormat('yyyy-MM-dd').format(eventDate.value!)
+                              : 'Date (Required)',
+                          prefixIcon: const Icon(
+                            Icons.calendar_today,
                             color: Colors.blueAccent,
                           ),
-                          border: OutlineInputBorder(
+                          border: const OutlineInputBorder(
                             borderSide: BorderSide.none,
                           ),
                         ),
                       ),
                       const Divider(),
                       TextField(
-                        controller: startingTime,
-                        decoration: const InputDecoration(
-                          hintText: 'Starting Time (Required)',
-                          prefixIcon: Icon(
+                        onTap: () async {
+                          final TimeOfDay? startTimePicker = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (startTimePicker != null && startTimePicker != eventStartingTime.value) {
+                            eventStartingTime.value = startTimePicker;
+                          }
+                        },
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: eventStartingTime.value != null
+                              ? formatTimeOfDay(eventStartingTime.value!)
+                              : 'Starting Time (Required)',
+                          prefixIcon: const Icon(
                             Icons.timelapse_outlined,
                             color: Colors.blueAccent,
                           ),
-                          border: OutlineInputBorder(
+                          border: const OutlineInputBorder(
                             borderSide: BorderSide.none,
                           ),
                         ),
                       ),
                       const Divider(),
                       TextField(
-                        controller: endingTime,
-                        decoration: const InputDecoration(
-                          hintText: 'Ending Time (Required)',
-                          prefixIcon: Icon(
+                        onTap: () async {
+                          final TimeOfDay? endTimePicker = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (endTimePicker != null && endTimePicker != eventEndingTime.value) {
+                            eventEndingTime.value = endTimePicker;
+                          }
+                        },
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: eventEndingTime.value != null
+                              ? formatTimeOfDay(eventEndingTime.value!)
+                              : 'Ending Time (Required)',
+                          prefixIcon: const Icon(
                             Icons.timelapse_outlined,
                             color: Colors.blueAccent,
                           ),
-                          border: OutlineInputBorder(
+                          border: const OutlineInputBorder(
                             borderSide: BorderSide.none,
                           ),
                         ),
@@ -222,9 +261,9 @@ class AddEvent extends HookConsumerWidget {
                         name: name.text,
                         description: description.text,
                         category: category.text,
-                        date: date.text,
-                        timeStart: startingTime.text,
-                        timeEnd: endingTime.text,
+                        date: eventDate.value!,
+                        timeStart: eventStartingTime.value!,
+                        timeEnd: eventEndingTime.value!,
                         location: location.text,
                         members: [],
                         numberOfMembers: numberOfMember.text,
@@ -272,4 +311,10 @@ class AddEvent extends HookConsumerWidget {
       ),
     );
   }
+}
+
+String formatTimeOfDay(TimeOfDay time) {
+  final now = DateTime.now();
+  final dateTime = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+  return '${time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod}:${time.minute.toString().padLeft(2, '0')} ${time.period == DayPeriod.am ? 'AM' : 'PM'}';
 }

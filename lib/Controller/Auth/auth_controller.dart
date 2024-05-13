@@ -27,9 +27,9 @@ class AuthController extends StateNotifier<User?> {
 
   /// <Fetching User Information Controller>
 
-  Future<UserInformation> fetchUserName(String userId) async {
+  Future<UserInformation> fetchUserName(String? userId) async {
     try {
-      final response = await supabase.from('user').select('name , user_name').eq('id', userId);
+      final response = await supabase.from('user').select('name , user_name').eq('id', userId!);
       if (response.isNotEmpty) {
         final name = response.first['name'];
         final userName = response.first['user_name'];
@@ -49,21 +49,21 @@ class AuthController extends StateNotifier<User?> {
   /// <---------- Sign Up Controller Section ----------> .
 
   String? getUserId() {
-    return supabase.auth.currentSession?.user.id;
+    final response = supabase.auth.currentSession?.user.id;
+    print(response);
+    return response;
   }
 
   String? getName() {
-    final userMetadata = supabase.auth.currentUser?.userMetadata;
-    if (userMetadata != null && userMetadata.containsKey('data')) {
-      return userMetadata['data']['name'];
-    }
-
-    return null;
+    final userMetadata = supabase.auth.currentUser?.userMetadata?['name'];
+    print(userMetadata);
+    return userMetadata;
   }
 
   String getUserName() {
     final userMetadata = supabase.auth.currentUser?.userMetadata;
-    return userMetadata != null ? userMetadata['data']['userName'] : '@Derpy';
+
+    return userMetadata != null && userMetadata['user_name'] != null ? userMetadata['user_name'] : 'Derpy';
   }
 
   Future<void> getUserNameFromGoogleApi(String? userId) async {
@@ -82,11 +82,12 @@ class AuthController extends StateNotifier<User?> {
   }
 
   Future<void> insertDemoData() async {
-    final uuid = getUserId();
+    final id = getUserId();
     final name = getName();
     final userName = getUserName();
+
     await supabase.from('user').insert({
-      'id': uuid,
+      'id': id,
       'name': name,
       'user_name': '@$userName',
     });
@@ -96,14 +97,19 @@ class AuthController extends StateNotifier<User?> {
     required Registration signUp,
   }) async {
     try {
-      final AuthResponse response =
-          await supabase.auth.signUp(email: signUp.email, password: signUp.password, data: {});
+      final AuthResponse response = await supabase.auth.signUp(
+          email: signUp.email, password: signUp.password, data: {'name': signUp.name, 'user_name': signUp.userName});
 
-      state = response.user;
-
-      log('successful');
+      if (response.user != null) {
+        state = response.user;
+        log('Signup successful');
+      } else {
+        log('Signup failed: $response');
+      }
+      throw Exception('Signup failed: $response');
     } catch (error) {
-      rethrow;
+      log('Error during signup: ${error.toString()}');
+      rethrow; // To allow further handling or logging at a higher level
     }
   }
 
@@ -115,8 +121,8 @@ class AuthController extends StateNotifier<User?> {
       await createUserAccount(
         signUp: Registration(user.name, user.userName, user.email, user.password),
       );
+      await insertDemoData();
       onSuccess();
-      insertDemoData();
     } catch (e) {
       print(e);
     }
