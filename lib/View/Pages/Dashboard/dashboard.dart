@@ -5,7 +5,7 @@ import 'package:derpy/Components/reusable_card.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
-import 'package:derpy/Model/group.dart';
+import 'package:derpy/Controller/dashboard_controller.dart';
 import 'package:derpy/View/Pages/Dashboard/add_group.dart';
 import 'package:derpy/View/Pages/group_content.dart';
 import 'package:flutter/material.dart';
@@ -22,69 +22,23 @@ class Dashboard extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final supabase = Supabase.instance.client;
     final authController = ref.watch(AuthController.authControllerProvider.notifier);
-    final adminGroups = authController.getUserId().toString();
-    final ownGroups = useState<List<Group>>([]);
-    final myGroupAsMember = useState<List<Group>>([]);
-    final isLoading = useState<bool>(true);
-    final error = useState<String?>(null);
+    final dashboardController = ref.watch(dashboardControllerProvider);
+    final currentUserId = authController.getUserId().toString();
     final dashboardControl = useState(DashboardControl.admin);
 
-    void fetchMyOwnGroups() async {
-      isLoading.value = true;
-      try {
-        final response = await supabase.from('group').select().eq('admin_id', adminGroups);
+    useEffect(() {
+      Future.delayed(Duration.zero, () {
+        dashboardController.fetchMyOwnGroups(currentUserId);
+        dashboardController.fetchMyGroupsAsMember(currentUserId);
+      });
 
-        ownGroups.value = (response).map((e) => Group.fromJson(e)).toList();
-      } catch (e) {
-        error.value = e.toString();
-      } finally {
-        isLoading.value = false;
-      }
-    }
-
-    void fetchMyGroupsAsMember() async {
-      isLoading.value = true;
-      log('Fetching groups as member...');
-
-      try {
-        final userId = authController.getUserId().toString();
-        log('Fetching for user ID: $userId');
-
-        final response = await supabase.from('user').select('member_of').eq('id', userId);
-        isLoading.value = false;
-
-        List<Map<String, dynamic>> responseData = response;
-        log('Received user groups data: $responseData');
-
-        for (var item in responseData) {
-          List memberOfList = item['member_of'] ?? [];
-          log('Member of list for user $userId: $memberOfList');
-
-          for (var groupId in memberOfList) {
-            log('Fetching group details for group ID: $groupId');
-            final groupResponse = await supabase.from('group').select().eq('group_id', groupId);
-
-            List<Map<String, dynamic>> groupData = groupResponse;
-            log('Received group data: $groupData');
-
-            List<Group> groups = groupData.map((groupMap) => Group.fromJson(groupMap)).toList();
-            myGroupAsMember.value.addAll(groups);
-            log('Groups added to member list: $groups');
-          }
-        }
-      } catch (e) {
-        isLoading.value = false;
-        log('Error during fetchMyGroupsAsMember: $e');
-      }
-    }
-
-    if (error.value != null) {
-      return Center(child: Text('Error: ${error.value}'));
-    }
+      return null;
+    }, []);
 
     int gg() {
-      final result =
-          dashboardControl.value == DashboardControl.admin ? ownGroups.value.length : myGroupAsMember.value.length;
+      final result = dashboardControl.value == DashboardControl.admin
+          ? dashboardController.ownGroups.length
+          : dashboardController.myGroupAsMember.length;
       log('Dashboard List: $result');
       return result;
     }
@@ -108,12 +62,6 @@ class Dashboard extends HookConsumerWidget {
       },
     );
 
-    useEffect(() {
-      fetchMyOwnGroups();
-      fetchMyGroupsAsMember();
-
-      return null;
-    }, []);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -149,72 +97,81 @@ class Dashboard extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 12.0),
                       ElevatedButton(
-                          onPressed: () {
-                            showModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  return const RegisterDashboard();
-                                });
-                          },
-                          style: const ButtonStyle(),
-                          child: Text(
-                            'Join Us',
-                            style: TextStyleManager(
-                                kColor: Colors.blueAccent, kFontSize: 25.0, kFontWeight: FontWeight.normal),
-                          ))
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return const RegisterDashboard();
+                            },
+                          );
+                        },
+                        style: const ButtonStyle(),
+                        child: Text(
+                          'Join Us',
+                          style: TextStyleManager(
+                            kColor: Colors.blueAccent,
+                            kFontSize: 25.0,
+                            kFontWeight: FontWeight.normal,
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 )
-              : isLoading.value
+              : dashboardController.isLoading
                   ? const Expanded(
                       child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ],
-                    ))
-                  : Expanded(
-                      child: isLoading.value
-                          ? const Center(child: CircularProgressIndicator())
-                          : ownGroups.value.isEmpty && myGroupAsMember.value.isEmpty
-                              ? const Center(child: Text('No groups found.'))
-                              : RefreshIndicator(
-                                  onRefresh: () async {
-                                    fetchMyOwnGroups();
-                                    fetchMyGroupsAsMember();
-                                  },
-                                  child: ListView.builder(
-                                    itemBuilder: (context, index) {
-                                      final group = dashboardControl.value == DashboardControl.admin
-                                          ? ownGroups.value[index]
-                                          : myGroupAsMember.value[index];
-                                      final imageAvatar = supabase.storage.from('Gg').getPublicUrl(group.groupImage);
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: ReusableCard(
-                                          imagePath: imageAvatar,
-                                          title: group.name,
-                                          description: group.description,
-                                          visibilty: 'Public',
-                                          groupOrEvent: group.category,
-                                          numberOfMember: '10',
-                                          onTap: () {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    GroupContent(groupName: group.name, groupImage: imageAvatar),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    itemCount: gg(),
-                                  ),
-                                ),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ],
+                      ),
                     )
+                  : Expanded(
+                      child: dashboardController.ownGroups.isEmpty && dashboardController.myGroupAsMember.isEmpty
+                          ? const Center(child: Text('No groups found.'))
+                          : RefreshIndicator(
+                              key: const Key('Refresh'),
+                              onRefresh: () async {
+                                dashboardController.fetchMyOwnGroups(currentUserId);
+                                dashboardController.fetchMyGroupsAsMember(currentUserId);
+                              },
+                              child: ListView.builder(
+                                itemBuilder: (context, index) {
+                                  final group = dashboardControl.value == DashboardControl.admin
+                                      ? dashboardController.ownGroups[index]
+                                      : dashboardController.myGroupAsMember[index];
+                                  final imageAvatar = supabase.storage.from('Gg').getPublicUrl(group.groupImage);
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    child: InkWell(
+                                      child: ReusableCard(
+                                        imagePath: imageAvatar,
+                                        title: group.name,
+                                        description: group.description,
+                                        visibilty: 'Public',
+                                        groupOrEvent: group.category,
+                                        numberOfMember: '10',
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => GroupContent(
+                                                groupName: group.name,
+                                                groupImage: imageAvatar,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                                itemCount: gg(),
+                              ),
+                            ),
+                    ),
         ],
       ),
       floatingActionButton: dashboardControl.value == DashboardControl.admin && authController.getUserId() != null

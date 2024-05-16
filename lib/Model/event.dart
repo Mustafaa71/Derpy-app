@@ -44,9 +44,9 @@ class Event {
       category: json['category'],
       date: DateTime.parse(json['date']),
       timeStart: TimeOfDay(
-          hour: int.parse(json['time_start'].split(":")[0]), minute: int.parse(json['time_start'].split(":")[1])),
+          hour: int.parse(json['time_start'].split(':')[0]), minute: int.parse(json['time_start'].split(':')[1])),
       timeEnd:
-          TimeOfDay(hour: int.parse(json['time_end'].split(":")[0]), minute: int.parse(json['time_end'].split(":")[1])),
+          TimeOfDay(hour: int.parse(json['time_end'].split(':')[0]), minute: int.parse(json['time_end'].split(':')[1])),
       location: json['location'],
       members: List<String>.from(json['members']),
       numberOfMembers: json['number_of_members'],
@@ -56,9 +56,8 @@ class Event {
   }
 
   Map<String, dynamic> toJson() {
-    final dateFormat = DateFormat('yyyy-MM-dd'); // For date formatting
-    final timeFormat = (TimeOfDay time) =>
-        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'; // For time formatting
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    timeFormat(TimeOfDay time) => '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
     return {
       'event_id': eventId,
@@ -67,9 +66,9 @@ class Event {
       'name': name,
       'description': description,
       'category': category,
-      'date': dateFormat.format(date), // Convert DateTime to String
-      'time_start': timeFormat(timeStart), // Convert TimeOfDay to String
-      'time_end': timeFormat(timeEnd), // Convert TimeOfDay to String
+      'date': dateFormat.format(date),
+      'time_start': timeFormat(timeStart),
+      'time_end': timeFormat(timeEnd),
       'location': location,
       'members': members,
       'number_of_members': numberOfMembers,

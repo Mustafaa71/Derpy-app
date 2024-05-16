@@ -7,6 +7,7 @@ import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/Controller/group_controller.dart';
 import 'package:derpy/Controller/image_picker_controller.dart';
 import 'package:derpy/Model/group.dart';
+import 'package:derpy/View/Pages/Dashboard/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -220,6 +221,7 @@ class AddGroup extends HookConsumerWidget {
                   imagePickerController.clearImagePath();
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
+                  useState<Widget>(const Dashboard());
                 }
               });
             },

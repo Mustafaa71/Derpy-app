@@ -4,12 +4,12 @@ import 'package:derpy/Components/buttons/reusable_button.dart';
 import 'package:derpy/Components/reusable_card_image.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
-import 'package:derpy/Controller/group_controller.dart';
 import 'package:derpy/Model/event.dart';
 import 'package:derpy/View/Pages/add_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:widget_circular_animator/widget_circular_animator.dart';
 
@@ -25,7 +25,6 @@ class GroupContent extends HookConsumerWidget {
     final isLoading = useState<bool>(true);
     const oddCardColor = Color(0xFF122932);
     const evenCardColor = Color(0xFF285943);
-    final groupController = ref.watch(GroupController.groupControllerProvider.notifier);
 
     StreamSubscription<SupabaseStreamEvent>? getEvents() {
       isLoading.value = true;
@@ -133,7 +132,7 @@ class GroupContent extends HookConsumerWidget {
                                                     ),
                                                   ),
                                                   Text(
-                                                    'Date: ${event.date}',
+                                                    'Date: ${formatDate(event.date)}',
                                                     style: TextStyleManager(
                                                       kColor: Colors.grey,
                                                       kFontSize: 15.0,
@@ -148,7 +147,7 @@ class GroupContent extends HookConsumerWidget {
                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: [
                                                   Text(
-                                                    'Starting Time: ${event.timeStart}',
+                                                    'Starting Time: ${event.timeStart.format(context)}',
                                                     style: TextStyleManager(
                                                       kColor: Colors.white,
                                                       kFontSize: 15.0,
@@ -156,7 +155,7 @@ class GroupContent extends HookConsumerWidget {
                                                     ),
                                                   ),
                                                   Text(
-                                                    'Starting Time: ${event.timeEnd}',
+                                                    'Ending Time: ${event.timeEnd.format(context)}',
                                                     style: TextStyleManager(
                                                       kColor: Colors.white,
                                                       kFontSize: 15.0,
@@ -291,7 +290,7 @@ class GroupContent extends HookConsumerWidget {
                                             ),
                                           ),
                                           Text(
-                                            'Date: ${event.date}',
+                                            'Date: ${formatDate(event.date)}',
                                             style: TextStyleManager(
                                               kColor: Colors.grey,
                                               kFontSize: 15.0,
@@ -350,4 +349,9 @@ class GroupContent extends HookConsumerWidget {
       ),
     );
   }
+}
+
+String formatDate(DateTime date) {
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
+  return formatter.format(date);
 }
