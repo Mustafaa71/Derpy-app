@@ -47,11 +47,10 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     final response = await supabase.from('group').insert([group.toJson()]);
     if (response.error != null) {
       state = AsyncValue.error(response.error!, StackTrace.current);
-    } else {
-      getGroupData();
     }
   }
 
+  // Adds a group ID to a user's list of groups in the database
   Future<void> addGroupIdToApiUserList(String newGroupId, String getUserId) async {
     log('Starting to add group ID: $newGroupId to user ID: $getUserId');
 
@@ -63,20 +62,17 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
 
     if (currentGroups != null) {
       final List<dynamic> updatedGroups = [...currentGroups, newGroupId];
-      log('Updating existing groups with: $updatedGroups');
 
       final addValue = await supabase.from('user').update({'groups': updatedGroups}).eq('id', getUserId);
       log('Update response: ${addValue.toString()}');
     } else {
       final List<dynamic> updatedGroups = [newGroupId];
-      log('User has no current groups. Creating new group list with: $updatedGroups');
 
-      final addValue =
-          await supabase.from('user').upsert({'id': getUserId, 'groups': updatedGroups}).eq('id', getUserId);
-      log('Upsert response: ${addValue.toString()}');
+      await supabase.from('user').upsert({'id': getUserId, 'groups': updatedGroups}).eq('id', getUserId);
     }
   }
 
+  // Add the current user as a member of a group in the database
   Future<void> addMeAsAmember(String userId, String newGroupId) async {
     log('Function starts ...');
     try {
@@ -106,6 +102,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  // Adds a user ID to a group's list of members in the database
   Future<void> addUserIdIntoGroups(String userId, String newGroupId) async {
     log('Function starts ...');
     try {
@@ -135,6 +132,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  // Removes a group from the database
   Future<void> removeGroup(String groupId) async {
     final response = await supabase.from('group').delete().eq('group_id', groupId);
     if (response.error != null) {
@@ -144,6 +142,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  // Fetches users who are members of a specific group from the database
   Future<List<Map<String, dynamic>>> fetchUsersWithGroup(String groupId) async {
     try {
       final response = await supabase.from('user').select('id, member_of').contains('member_of', [groupId]);
@@ -155,6 +154,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  // Removes a group ID from all users' member_of list in the database
   Future<void> removeGroupIdFromUsers(String groupId) async {
     final users = await fetchUsersWithGroup(groupId);
     for (var user in users) {
@@ -174,6 +174,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  // Fetches the list of groups from the database and updates the state
   void getGroupData() {
     state = const AsyncValue.loading();
     subscription = supabase.from('group').stream(primaryKey: ['id']).listen(
@@ -188,6 +189,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     );
   }
 
+  // Fetches the current user's groups from the database and updates the state
   void fetchMyOwnGroups() {
     state = const AsyncValue.loading();
     try {
@@ -201,6 +203,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  // Disposes the subscription to the group stream
   @override
   void dispose() {
     subscription?.cancel();
