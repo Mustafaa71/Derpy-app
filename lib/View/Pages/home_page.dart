@@ -4,6 +4,7 @@ import 'package:derpy/Components/buttons/filter_button.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
+import 'package:derpy/Controller/permissions.dart';
 import 'package:derpy/View/Pages/non_user_screen.dart';
 import 'package:derpy/View/Pages/user_screen.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class HomePage extends HookConsumerWidget {
     final supabase = Supabase.instance.client;
     final getName = authController.getName();
     final shortCut = getName?.characters.first.toUpperCase() ?? 'D';
+    final permissions = ref.watch(permissionsProvider.notifier);
 
     return Scaffold(
       body: SafeArea(
