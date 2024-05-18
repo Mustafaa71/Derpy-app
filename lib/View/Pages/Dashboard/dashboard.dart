@@ -154,6 +154,7 @@ class Dashboard extends HookConsumerWidget {
                                         visibilty: 'Public',
                                         groupOrEvent: group.category,
                                         numberOfMember: '10',
+                                        location: group.location,
                                         onTap: () {
                                           Navigator.of(context).push(
                                             MaterialPageRoute(

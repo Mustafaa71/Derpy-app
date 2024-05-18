@@ -57,7 +57,10 @@ class GroupContent extends HookConsumerWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
-            child: ReusableCardImage(imagePath: groupImage),
+            child: ReusableCardImage(
+              imagePath: groupImage,
+              topRight: 20,
+            ),
           ),
         ],
         backgroundColor: ColorManager.kBackgroundColor,

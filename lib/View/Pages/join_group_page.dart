@@ -116,11 +116,12 @@ class JoinGroupPage extends HookConsumerWidget {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
             child: ReusableButton(
-                label: buttonTitle,
-                textColor: textColor,
-                backgroundcolor: buttonBackgroundcolor,
-                onClick: onTap,
-                borderColor: borderColor),
+              label: buttonTitle,
+              textColor: textColor,
+              backgroundcolor: buttonBackgroundcolor,
+              onClick: onTap,
+              borderColor: borderColor,
+            ),
           ),
         ],
       ),

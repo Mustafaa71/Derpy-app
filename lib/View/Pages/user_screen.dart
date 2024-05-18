@@ -83,7 +83,6 @@ class UserScreen extends HookConsumerWidget {
                                   .push(
                                     MaterialPageRoute(
                                       builder: (context) => GroupContent(
-                                        groupId: data.id,
                                         groupName: data.name,
                                         groupImage: hh,
                                       ),

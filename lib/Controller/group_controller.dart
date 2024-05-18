@@ -86,6 +86,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
         log('Updating existing member_of with: $updatedMemberOf');
 
         final addValue = await supabase.from('user').update({'member_of': updatedMemberOf}).eq('id', userId);
+
         log('Update response: ${addValue.toString()}');
       } else {
         final List<dynamic> updatedMemberOf = [newGroupId];

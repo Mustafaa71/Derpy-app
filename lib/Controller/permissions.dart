@@ -28,17 +28,14 @@ class PermissionNotifier extends ChangeNotifier {
 
   Future<bool> hideJoinGroup(String currentUserId, String groupId) async {
     final enrollments = await getCurrentUserEnrollment(currentUserId);
-    final response = await Supabase.instance.client.from('group').select('group_id').eq('group_id', groupId);
+    final response = await Supabase.instance.client.from('group').select('group_id, admin_id').eq('group_id', groupId);
 
     if (response.isNotEmpty) {
       var groupData = response[0];
-      for (var enrollment in enrollments) {
-        if (enrollment == groupData['group_id']) {
-          return true;
-        }
+      if (enrollments.contains(groupData['group_id']) || currentUserId == groupData['admin_id']) {
+        return true;
       }
     }
-
     return false;
   }
 }
