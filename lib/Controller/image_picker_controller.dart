@@ -21,7 +21,7 @@ class ImagePickerController extends StateNotifier<AsyncValue<String?>> {
     final imageFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (imageFile == null) {
-      state = AsyncValue.error('No image selected', StackTrace.current);
+      state = const AsyncValue.data(null);
       return;
     }
 

@@ -48,6 +48,7 @@ class UserScreen extends HookConsumerWidget {
                 visibilty: data.category,
                 groupOrEvent: 'Group',
                 numberOfMember: '10',
+                location: data.location,
                 onTap: () async {
                   if (supabase.auth.currentUser != null) {
                     showDialog(
@@ -69,19 +70,20 @@ class UserScreen extends HookConsumerWidget {
                           groupName: data.name,
                           groupDescription: data.description,
                           groupLocation: data.location,
-                          buttonTitle: isMember ? 'You are already a member' : 'Join Group',
+                          buttonTitle: isMember ? 'You are already a member or admin' : 'Join Group',
                           buttonBackgroundcolor:
                               isMember ? const Color(0xFFea3323).withOpacity(0.2) : const Color(0xFF184239),
                           textColor: isMember ? const Color(0xffea3323) : const Color(0xFF42CA90),
                           borderColor: isMember ? const Color(0xffea3323) : const Color(0xFF42CA90),
                           onTap: () {
                             if (!isMember) {
-                              groupController.addMeAsAmember(getUserId.toString(), data.id);
-                              groupController.addUserIdIntoGroups(getUserId.toString(), data.id);
+                              groupController.enrollGroup(getUserId.toString(), data.id);
+                              groupController.addUserIdIntoMembers(getUserId.toString(), data.id);
                               Navigator.of(context)
                                   .push(
                                     MaterialPageRoute(
                                       builder: (context) => GroupContent(
+                                        groupId: data.id,
                                         groupName: data.name,
                                         groupImage: hh,
                                       ),

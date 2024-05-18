@@ -46,6 +46,7 @@ class NonUserScreen extends HookConsumerWidget {
                   visibilty: data.category,
                   groupOrEvent: 'Group',
                   numberOfMember: '10',
+                  location: data.location,
                   onTap: () {
                     if (supabase.auth.currentUser == null) {
                       showModalBottomSheet(
