@@ -50,7 +50,6 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Adds a group ID to a user's list of groups in the database
   Future<void> addGroupIdToApiUserList(String newGroupId, String getUserId) async {
     log('Starting to add group ID: $newGroupId to user ID: $getUserId');
 
@@ -72,8 +71,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Add the current user as a member of a group in the database
-  Future<void> addMeAsAmember(String userId, String newGroupId) async {
+  Future<void> enrollGroup(String userId, String newGroupId) async {
     log('Function starts ...');
     try {
       log('Waiting for supabase Response: ....\n');
@@ -102,29 +100,28 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Adds a user ID to a group's list of members in the database
-  Future<void> addUserIdIntoGroups(String userId, String newGroupId) async {
+  Future<void> addUserIdIntoMembers(String userId, String groupId) async {
     log('Function starts ...');
     try {
       log('Waiting for supabase Response: ....\n');
 
-      final response = await supabase.from('group').select('members').eq('id', userId).single();
+      final response = await supabase.from('group').select('members').eq('id', groupId).single();
       log('addUserIdIntoGroups function:\n supabase Res: ${response.toString()}');
 
       final List<dynamic>? currentMembers = response['members'];
 
       if (currentMembers != null) {
-        final List<dynamic> updatedMembers = [...currentMembers, newGroupId];
+        final List<dynamic> updatedMembers = [...currentMembers, userId];
         log('Updating existing members with: $updatedMembers');
 
-        final addValue = await supabase.from('group').update({'members': updatedMembers}).eq('id', userId);
+        final addValue = await supabase.from('group').update({'members': updatedMembers}).eq('id', groupId);
         log('Update response: ${addValue.toString()}');
       } else {
-        final List<dynamic> updatedMembers = [newGroupId];
-        log('User has no current members. Creating new members list with: $updatedMembers');
+        final List<dynamic> updatedMembers = [userId];
+        log('Group has no current members. Creating new members list with: $updatedMembers');
 
         final addValue =
-            await supabase.from('group').upsert({'id': userId, 'members': updatedMembers}).eq('id', userId);
+            await supabase.from('group').upsert({'id': groupId, 'members': updatedMembers}).eq('id', groupId);
         log('Upsert response: ${addValue.toString()}');
       }
     } catch (e) {
@@ -132,9 +129,8 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Removes a group from the database
   Future<void> removeGroup(String groupId) async {
-    final response = await supabase.from('group').delete().eq('group_id', groupId);
+    final response = await supabase.from('group').delete().eq('id', groupId);
     if (response.error != null) {
       state = AsyncValue.error(response.error!, StackTrace.current);
     } else {
@@ -142,19 +138,17 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Fetches users who are members of a specific group from the database
   Future<List<Map<String, dynamic>>> fetchUsersWithGroup(String groupId) async {
     try {
       final response = await supabase.from('user').select('id, member_of').contains('member_of', [groupId]);
       log('response: $response');
-      return List<Map<String, dynamic>>.from(response);
+      return List<Map<String, dynamic>>.from(response); // Ensure you're accessing the data property
     } catch (e) {
       log('Exception fetching users: $e');
       return [];
     }
   }
 
-  // Removes a group ID from all users' member_of list in the database
   Future<void> removeGroupIdFromUsers(String groupId) async {
     final users = await fetchUsersWithGroup(groupId);
     for (var user in users) {
@@ -174,7 +168,6 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Fetches the list of groups from the database and updates the state
   void getGroupData() {
     state = const AsyncValue.loading();
     subscription = supabase.from('group').stream(primaryKey: ['id']).listen(
@@ -189,7 +182,6 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     );
   }
 
-  // Fetches the current user's groups from the database and updates the state
   void fetchMyOwnGroups() {
     state = const AsyncValue.loading();
     try {
@@ -203,7 +195,6 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Disposes the subscription to the group stream
   @override
   void dispose() {
     subscription?.cancel();

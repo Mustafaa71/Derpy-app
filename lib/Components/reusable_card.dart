@@ -10,6 +10,7 @@ class ReusableCard extends StatelessWidget {
     required this.description,
     required this.visibilty,
     required this.groupOrEvent,
+    required this.location,
     required this.numberOfMember,
     required this.onTap,
   });
@@ -19,6 +20,7 @@ class ReusableCard extends StatelessWidget {
   final String description;
   final String visibilty;
   final String groupOrEvent;
+  final String location;
   final VoidCallback onTap;
   final String numberOfMember;
   @override
@@ -45,6 +47,7 @@ class ReusableCard extends StatelessWidget {
               publicOrPrivate: visibilty,
               groupOrEvent: groupOrEvent,
               numberOfMember: numberOfMember,
+              location: location,
             ),
           ],
         ),
