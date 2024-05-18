@@ -159,6 +159,7 @@ class Dashboard extends HookConsumerWidget {
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
                                               builder: (context) => GroupContent(
+                                                groupId: group.id,
                                                 groupName: group.name,
                                                 groupImage: imageAvatar,
                                               ),

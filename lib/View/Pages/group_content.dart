@@ -14,7 +14,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:widget_circular_animator/widget_circular_animator.dart';
 
 class GroupContent extends HookConsumerWidget {
-  const GroupContent({required this.groupName, required this.groupImage, super.key});
+  const GroupContent({required this.groupId, required this.groupName, required this.groupImage, super.key});
+  final String groupId;
   final String groupName;
   final String groupImage;
 
@@ -343,7 +344,9 @@ class GroupContent extends HookConsumerWidget {
         onPressed: () {
           showModalBottomSheet(
             context: context,
-            builder: (context) => const AddEvent(),
+            builder: (context) => AddEvent(
+              groupId: groupId,
+            ),
             isScrollControlled: true,
             useSafeArea: true,
           );
