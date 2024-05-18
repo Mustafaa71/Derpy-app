@@ -2,6 +2,7 @@ import 'package:derpy/Components/avatar.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
+import 'package:derpy/Controller/event_controller.dart';
 import 'package:derpy/Controller/image_picker_controller.dart';
 import 'package:derpy/Model/event.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 class AddEvent extends HookConsumerWidget {
-  const AddEvent({super.key});
+  const AddEvent({required this.groupId, super.key});
+  final String groupId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,6 +33,7 @@ class AddEvent extends HookConsumerWidget {
     final eventDate = useState<DateTime?>(null);
     final eventStartingTime = useState<TimeOfDay?>(null);
     final eventEndingTime = useState<TimeOfDay?>(null);
+    final eventController = ref.watch(eventControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -271,6 +274,7 @@ class AddEvent extends HookConsumerWidget {
                         cancelEvent: false,
                       );
                       await supabase.from('event').insert([addEvent.toJson()]);
+                      await eventController.addEventtoGroup(groupId, eventUuid);
                       imagePickerController.clearImagePath();
                       if (!context.mounted) return;
                       Navigator.of(context).pop();
