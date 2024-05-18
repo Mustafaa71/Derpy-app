@@ -3,6 +3,7 @@ import 'package:derpy/Components/reusable_card.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
 import 'package:derpy/Controller/group_controller.dart';
 import 'package:derpy/Controller/permissions.dart';
+import 'package:derpy/Controller/user_controller.dart';
 import 'package:derpy/View/Pages/group_content.dart';
 import 'package:derpy/View/Pages/join_group_page.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class UserScreen extends HookConsumerWidget {
     final getUserId = authController.getUserId();
     final groupListAsyncValue = ref.watch(GroupController.groupControllerProvider);
     final permission = ref.watch(permissionsProvider.notifier);
-
+    final userController = ref.watch(userControllerProvider);
     return Expanded(
       child: groupListAsyncValue.when(
         skipLoadingOnRefresh: false,
@@ -78,7 +79,7 @@ class UserScreen extends HookConsumerWidget {
                           onTap: () {
                             if (!isMember) {
                               groupController.enrollGroup(getUserId.toString(), data.id);
-                              groupController.addUserIdIntoMembers(getUserId.toString(), data.id);
+                              userController.addUserIdToGroupMember(supabase.auth.currentUser!.id, data.id);
                               Navigator.of(context)
                                   .push(
                                     MaterialPageRoute(

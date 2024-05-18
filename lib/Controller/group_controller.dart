@@ -101,34 +101,33 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  Future<void> addUserIdIntoMembers(String userId, String groupId) async {
-    log('Function starts ...');
-    try {
-      log('Waiting for supabase Response: ....\n');
+  // Future<void> addUserIdIntoMembers(String userId, String groupId) async {
+  //   log('Function starts ...');
+  //   try {
+  //     log('Waiting for supabase Response: ....\n');
 
-      final response = await supabase.from('group').select('members').eq('id', groupId).single();
-      log('addUserIdIntoGroups function:\n supabase Res: ${response.toString()}');
+  //     final response = await supabase.from('group').select('members').eq('id', groupId).single();
+  //     log('addUserIdIntoGroups function:\n supabase Res: ${response.toString()}');
 
-      final List<dynamic>? currentMembers = response['members'];
+  //     final List<dynamic>? currentMembers = response['members'];
 
-      if (currentMembers != null) {
-        final List<dynamic> updatedMembers = [...currentMembers, userId];
-        log('Updating existing members with: $updatedMembers');
+  //     if (currentMembers != null) {
+  //       final List<dynamic> updatedMembers = [...currentMembers, userId];
+  //       log('Updating existing members with: $updatedMembers');
 
-        final addValue = await supabase.from('group').update({'members': updatedMembers}).eq('id', groupId);
-        log('Update response: ${addValue.toString()}');
-      } else {
-        final List<dynamic> updatedMembers = [userId];
-        log('Group has no current members. Creating new members list with: $updatedMembers');
+  //       final addValue = await supabase.from('group').update({'members': updatedMembers}).eq('group_id', groupId);
+  //       log('Update response: ${addValue.toString()}');
+  //     } else {
+  //       final List<dynamic> updatedMembers = [userId];
+  //       log('Group has no current members. Creating new members list with: $updatedMembers');
 
-        final addValue =
-            await supabase.from('group').upsert({'id': groupId, 'members': updatedMembers}).eq('id', groupId);
-        log('Upsert response: ${addValue.toString()}');
-      }
-    } catch (e) {
-      log('Error occur in Group Controller [addUserIdIntoGroups function]: $e');
-    }
-  }
+  //       final addValue = await supabase.from('group').upsert({'members': updatedMembers}).eq('group_id', groupId);
+  //       log('Upsert response: ${addValue.toString()}');
+  //     }
+  //   } catch (e) {
+  //     log('Error occur in Group Controller [addUserIdIntoGroups function]: $e');
+  //   }
+  // }
 
   Future<void> removeGroup(String groupId) async {
     final response = await supabase.from('group').delete().eq('id', groupId);
