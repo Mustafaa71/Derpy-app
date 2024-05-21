@@ -10,6 +10,8 @@ final permissionsProvider = ChangeNotifierProvider<PermissionNotifier>((ref) {
 
 class PermissionNotifier extends ChangeNotifier {
   final supabase = Supabase.instance.client;
+
+  /// These functions are used to give a user permission regarding to Groups ...
   Future<List<String>> getCurrentUserEnrollment(String currentUserId) async {
     try {
       final response = await Supabase.instance.client.from('user').select('member_of').eq('id', currentUserId);
@@ -36,6 +38,19 @@ class PermissionNotifier extends ChangeNotifier {
         return true;
       }
     }
+    return false;
+  }
+
+  /// Function to events permissions ...
+
+  Future<bool> hideJoinEvents(String currentUserId, String eventId) async {
+    final response = await supabase.from('event').select('members').eq('event_id', eventId).single();
+    final List<String> members = List.from(response['members']);
+
+    if (members.isNotEmpty && members.contains(currentUserId)) {
+      return true;
+    }
+
     return false;
   }
 }

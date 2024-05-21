@@ -55,7 +55,7 @@ class ReusableCardContent extends StatelessWidget {
             ),
             const Divider(),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Row(
                   children: [
@@ -72,6 +72,8 @@ class ReusableCardContent extends StatelessWidget {
                     Text(
                       location,
                       style: const TextStyle(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 )

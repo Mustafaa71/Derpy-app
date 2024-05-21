@@ -1,5 +1,3 @@
-import 'package:derpy/Model/event.dart';
-
 class Group {
   final String id;
   final String admin;
@@ -10,7 +8,7 @@ class Group {
   final String location;
   final bool accessModifier;
   final List<String> members;
-  final List<Event> events;
+  final List<String> events;
 
   Group({
     required this.id,
@@ -36,9 +34,7 @@ class Group {
       location: json['location'],
       accessModifier: json['access_modifier'],
       members: List<String>.from(json['members']),
-      events: (json['events'] != null)
-          ? List<Event>.from(json['events'].map((eventJson) => Event.fromJson(eventJson)))
-          : [],
+      events: List<String>.from(json['events']),
     );
   }
 
@@ -53,12 +49,7 @@ class Group {
       'location': location,
       'access_modifier': accessModifier,
       'members': members,
-      'events': events.map((event) => event.toJson()).toList(),
+      'events': members
     };
-  }
-
-  @override
-  String toString() {
-    return 'Group(Group id: $id, $admin, name: $name, description: $description, groupImage: $groupImage, category: $category, location: $location, accessModifier: $accessModifier, members: $members, events: $events)';
   }
 }
