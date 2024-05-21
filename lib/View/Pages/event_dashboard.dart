@@ -75,12 +75,12 @@ class EventDashboard extends HookConsumerWidget {
 
                 final event = events[index];
                 final cardColor = changeColorCard(index);
+                final eventAvatar = supabase.storage.from('Gg').getPublicUrl(event.eventAvatar);
                 return Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    boxShadow: const [],
                   ),
                   margin: const EdgeInsets.all(10.0),
                   child: Column(
@@ -100,12 +100,11 @@ class EventDashboard extends HookConsumerWidget {
                               outerAnimationSeconds: 10,
                               child: Container(
                                 decoration: BoxDecoration(color: Colors.grey[200], shape: BoxShape.circle),
-                                child: const CircleAvatar(
-                                  backgroundColor: Color(0xff034C5C),
+                                child: CircleAvatar(
+                                  backgroundColor: const Color(0xff034C5C),
                                   radius: 30,
                                   child: CircleAvatar(
-                                    backgroundImage: NetworkImage(
-                                        'https://helpx.adobe.com/content/dam/help/en/photoshop/using/convert-color-image-black-white/jcr_content/main-pars/before_and_after/image-before/Landscape-Color.jpg'),
+                                    backgroundImage: NetworkImage(eventAvatar),
                                     radius: 30,
                                   ),
                                 ),

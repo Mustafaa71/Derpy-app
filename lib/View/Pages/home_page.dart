@@ -1,10 +1,10 @@
 import 'dart:developer';
 
 import 'package:derpy/Components/buttons/filter_button.dart';
+import 'package:derpy/Components/register_dashboard.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Constants/text_style_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
-import 'package:derpy/Controller/permissions.dart';
 import 'package:derpy/View/Pages/event_dashboard.dart';
 import 'package:derpy/View/Pages/non_user_screen.dart';
 import 'package:derpy/View/Pages/user_screen.dart';
@@ -26,12 +26,12 @@ class HomePage extends HookConsumerWidget {
     final supabase = Supabase.instance.client;
     final getName = authController.getName();
     final shortCut = getName?.characters.first.toUpperCase() ?? 'D';
-    final permissions = ref.watch(permissionsProvider.notifier);
+    final isUserSignedIn = supabase.auth.currentSession != null;
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 25.0),
+          padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -68,7 +68,7 @@ class HomePage extends HookConsumerWidget {
                     showModalBottomSheet(
                         context: context,
                         builder: (context) {
-                          return const EventDashboard();
+                          return isUserSignedIn ? const EventDashboard() : const RegisterDashboard();
                         });
                   },
                   child: const Icon(

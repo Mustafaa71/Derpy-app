@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:derpy/Model/event.dart';
 import 'package:derpy/Model/group.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +28,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     String location,
     bool accessModifier,
     List<String> members,
-    List<Event> events,
+    List<String> events,
   ) async {
     final group = Group(
       id: id,
@@ -101,34 +100,6 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
-  // Future<void> addUserIdIntoMembers(String userId, String groupId) async {
-  //   log('Function starts ...');
-  //   try {
-  //     log('Waiting for supabase Response: ....\n');
-
-  //     final response = await supabase.from('group').select('members').eq('id', groupId).single();
-  //     log('addUserIdIntoGroups function:\n supabase Res: ${response.toString()}');
-
-  //     final List<dynamic>? currentMembers = response['members'];
-
-  //     if (currentMembers != null) {
-  //       final List<dynamic> updatedMembers = [...currentMembers, userId];
-  //       log('Updating existing members with: $updatedMembers');
-
-  //       final addValue = await supabase.from('group').update({'members': updatedMembers}).eq('group_id', groupId);
-  //       log('Update response: ${addValue.toString()}');
-  //     } else {
-  //       final List<dynamic> updatedMembers = [userId];
-  //       log('Group has no current members. Creating new members list with: $updatedMembers');
-
-  //       final addValue = await supabase.from('group').upsert({'members': updatedMembers}).eq('group_id', groupId);
-  //       log('Upsert response: ${addValue.toString()}');
-  //     }
-  //   } catch (e) {
-  //     log('Error occur in Group Controller [addUserIdIntoGroups function]: $e');
-  //   }
-  // }
-
   Future<void> removeGroup(String groupId) async {
     final response = await supabase.from('group').delete().eq('id', groupId);
     if (response.error != null) {
@@ -166,6 +137,10 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
         log('Exception updating user ${user['id']}: $e');
       }
     }
+  }
+
+  Future<void> deleteAgroup(String groupId) async {
+    await supabase.from('group').delete().eq('group_id', groupId);
   }
 
   void getGroupData() {
