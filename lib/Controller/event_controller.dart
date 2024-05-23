@@ -118,11 +118,42 @@ class EventController extends StateNotifier<AsyncValue> {
         events.add(Event.fromJson(response));
       }
 
-      log('Events: $events');
+      log('Events GG: $events');
       return events;
     } catch (e) {
       log('Error fetching events: $e');
       return [];
+    }
+  }
+
+  /// This function get all users name that enroll in specific event ...
+
+  Future<List<dynamic>> getEventsThatUserIsEnrolledIn(String eventID) async {
+    try {
+      final response = await supabase.from('event').select('members').eq('event_id', eventID).single();
+      final members = response['members'];
+      return members;
+    } catch (e) {
+      log(e.toString());
+      return []; // Return an empty list on error.
+    }
+  }
+
+  Future<List<String>> displayEnrollment(String eventId) async {
+    try {
+      final List<dynamic> members = await getEventsThatUserIsEnrolledIn(eventId);
+      final List<String> enrollments = [];
+
+      for (var member in members) {
+        final response = await supabase.from('user').select('name').eq('id', member).single();
+        final userName = response['name'];
+        enrollments.add(userName);
+      }
+      log('Enrollments: $enrollments');
+      return enrollments;
+    } catch (e) {
+      log(e.toString());
+      return []; // Return an empty list on error.
     }
   }
 

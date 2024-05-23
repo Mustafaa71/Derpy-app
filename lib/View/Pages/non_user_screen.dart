@@ -45,7 +45,7 @@ class NonUserScreen extends HookConsumerWidget {
                   description: data.description,
                   visibilty: data.category,
                   groupOrEvent: 'Group',
-                  numberOfMember: '10',
+                  numberOfMember: data.members.length.toString(),
                   location: data.location,
                   onTap: () {
                     if (supabase.auth.currentUser == null) {
