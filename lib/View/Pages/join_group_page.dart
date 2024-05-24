@@ -9,6 +9,7 @@ class JoinGroupPage extends HookConsumerWidget {
     required this.groupName,
     required this.groupDescription,
     required this.groupLocation,
+    required this.numberOfMember,
     required this.buttonTitle,
     required this.buttonBackgroundcolor,
     required this.borderColor,
@@ -21,6 +22,7 @@ class JoinGroupPage extends HookConsumerWidget {
   final String groupName;
   final String groupDescription;
   final String groupLocation;
+  final String numberOfMember;
   final VoidCallback onTap;
 
   final String buttonTitle;
@@ -100,7 +102,7 @@ class JoinGroupPage extends HookConsumerWidget {
                         children: [
                           const Icon(Icons.people),
                           Text(
-                            '10',
+                            numberOfMember,
                             style:
                                 TextStyleManager(kColor: Colors.white, kFontSize: 20.0, kFontWeight: FontWeight.normal),
                           ),

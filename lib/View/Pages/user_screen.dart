@@ -71,6 +71,7 @@ class UserScreen extends HookConsumerWidget {
                           groupName: data.name,
                           groupDescription: data.description,
                           groupLocation: data.location,
+                          numberOfMember: data.members.length.toString(),
                           buttonTitle: isMember ? 'You are already a member or admin' : 'Join Group',
                           buttonBackgroundcolor:
                               isMember ? const Color(0xFFea3323).withOpacity(0.2) : const Color(0xFF184239),
