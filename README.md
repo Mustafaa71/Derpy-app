@@ -1,6 +1,6 @@
 # Derby Mobile
 
-![Derby App Logo](assets/Derpy-logo.jpeg)
+![Derby App Logo](assets/screenshot/derpy_logo.png)
 
 ## Technologies Used
 
