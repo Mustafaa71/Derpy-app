@@ -158,9 +158,11 @@ class EventDashboard extends HookConsumerWidget {
                                                     event.description,
                                                     style: TextStyleManager(
                                                       kColor: Colors.redAccent,
-                                                      kFontSize: 25.0,
+                                                      kFontSize: 15.0,
                                                       kFontWeight: FontWeight.bold,
                                                     ),
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                   const Divider(),
                                                   Text(

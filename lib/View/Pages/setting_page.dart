@@ -90,9 +90,7 @@ class SettingPage extends HookConsumerWidget {
                   supabase.auth.currentUser == null
                       ? const SizedBox.shrink()
                       : buildLogoutSection(ref, context, isLoading),
-                  const Text(
-                    'All rights reserved for Derpy-team © 2024',
-                  )
+                  const Text('All rights reserved for Derpy-team © 2024'),
                 ],
               ),
             ),

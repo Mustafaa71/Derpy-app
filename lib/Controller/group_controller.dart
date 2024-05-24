@@ -113,7 +113,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     try {
       final response = await supabase.from('user').select('id, member_of').contains('member_of', [groupId]);
       log('response: $response');
-      return List<Map<String, dynamic>>.from(response); // Ensure you're accessing the data property
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       log('Exception fetching users: $e');
       return [];
