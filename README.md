@@ -2,6 +2,10 @@
 
 ![Derby App Logo](assets/screenshot/derpy_logo.png)
 
+## Introduction
+
+Derby App is a groundbreaking platform designed to revolutionize sports connectivity in Saudi Arabia. With its user-friendly interface and robust features, the app enables sports enthusiasts to effortlessly create, join, and organize events, connect with like-minded individuals, and foster vibrant sports communities. Join us as we unveil the Derby App and explore its potential to transform the sports landscape in the kingdom.
+
 ## Technologies Used
 
 -   **Technologies and Frameworks:**
@@ -9,10 +13,6 @@
     -   Flutter
     -   Supabase
     -   Google Cloud
-
-## Introduction
-
-Derby App is a groundbreaking platform designed to revolutionize sports connectivity in Saudi Arabia. With its user-friendly interface and robust features, the app enables sports enthusiasts to effortlessly create, join, and organize events, connect with like-minded individuals, and foster vibrant sports communities. Join us as we unveil the Derby App and explore its potential to transform the sports landscape in the kingdom.
 
 ## Features
 
