@@ -41,3 +41,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Ignore html js files
+*.html
+/assets/Derby _ Mustafaa71's Org _ Supabase_files
+
