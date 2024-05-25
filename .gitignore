@@ -42,7 +42,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Ignore html js files
-*.html
-/assets/Derby _ Mustafaa71's Org _ Supabase_files
+# Ignore specific HTML file
+/assets/Derby _ Mustafaa71's Org _ Supabase.html
+
+# Ignore specific directory and its contents
+/assets/Derby_Mustafaa71's_Org_Supabase_files/
+
+
 
