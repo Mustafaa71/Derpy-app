@@ -60,6 +60,7 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
+  /// When the input field text is not empty, it initiates a search query.
   void _onSearchChanged() {
     final query = _searchController.text;
     if (query.isNotEmpty) {
@@ -71,12 +72,12 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  /// Performs a search operation based on the provided query string.
   Future<void> _performSearch(String query) async {
     setState(() {
       _isLoading = true;
     });
 
-    // Perform the search on Supabase
     final response = await supabase.from('group').select().ilike('name', '%$query%');
 
     setState(() {
@@ -85,6 +86,7 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  /// Retrieves the number of members in a group based on the provided group ID.
   Future<String> getMembersLength(groupID) async {
     final response = await supabase.from('group').select('members').eq('group_id', groupID).single();
     final numbs = response['members'].length.toString();

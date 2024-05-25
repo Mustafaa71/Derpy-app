@@ -14,7 +14,7 @@ class PermissionNotifier extends ChangeNotifier {
   /// These functions are used to give a user permission regarding to Groups ...
   Future<List<String>> getCurrentUserEnrollment(String currentUserId) async {
     try {
-      final response = await Supabase.instance.client.from('user').select('member_of').eq('id', currentUserId);
+      final response = await supabase.from('user').select('member_of').eq('id', currentUserId);
 
       log('response: $response');
       if (response.isNotEmpty) {

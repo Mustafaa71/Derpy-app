@@ -49,6 +49,7 @@ class GroupController extends StateNotifier<AsyncValue<List<Group>>> {
     }
   }
 
+  /// Add Group_id to User [groups column]...
   Future<void> addGroupIdToApiUserList(String newGroupId, String getUserId) async {
     log('Starting to add group ID: $newGroupId to user ID: $getUserId');
 
