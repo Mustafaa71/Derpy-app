@@ -13,8 +13,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-enum PageCategory { all, groups }
-
 class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
 
