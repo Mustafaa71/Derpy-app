@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:widget_circular_animator/widget_circular_animator.dart';
 
 class EventDashboard extends HookConsumerWidget {
@@ -18,6 +19,15 @@ class EventDashboard extends HookConsumerWidget {
     const evenCardColor = Color(0xFF285943);
     final supabase = Supabase.instance.client;
     final eventDashboardController = ref.watch(eventControllerProvider.notifier);
+
+    Future<void> openWhatsApp(String phoneNumber, String message) async {
+      final Uri url = Uri.parse('https://wa.me/$phoneNumber?text=${Uri.encodeFull(message)}');
+      if (await launchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    }
 
     Future<List<String>> getUserEventsId(String currentUserId) async {
       try {
@@ -82,7 +92,7 @@ class EventDashboard extends HookConsumerWidget {
                   onTap: () async {
                     final names = await eventDashboardController.displayEnrollment(event.eventId);
                     // ignore: use_build_context_synchronously
-                    final result = await showModalBottomSheet(
+                    await showModalBottomSheet(
                         context: context,
                         builder: (context) {
                           return Stack(
@@ -165,12 +175,32 @@ class EventDashboard extends HookConsumerWidget {
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
                                                   const Divider(),
-                                                  Text(
-                                                    'Contact Admin:',
-                                                    style: TextStyleManager(
-                                                        kColor: Colors.grey,
-                                                        kFontSize: 25,
-                                                        kFontWeight: FontWeight.bold),
+                                                  Container(
+                                                    color: Colors.grey.shade500.withOpacity(0.1),
+                                                    padding: const EdgeInsets.all(10),
+                                                    child: Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          'Contact Admin:',
+                                                          style: TextStyleManager(
+                                                              kColor: Colors.grey,
+                                                              kFontSize: 25,
+                                                              kFontWeight: FontWeight.bold),
+                                                        ),
+                                                        const SizedBox(width: 20.0),
+                                                        InkWell(
+                                                          onTap: () async {
+                                                            await openWhatsApp('0543584464', 'hey');
+                                                          },
+                                                          child: Image.asset(
+                                                            'assets/whatsApp.png',
+                                                            height: 40,
+                                                            width: 40,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ],
                                               ),
