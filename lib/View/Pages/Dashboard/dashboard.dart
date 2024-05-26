@@ -290,7 +290,7 @@ class Dashboard extends HookConsumerWidget {
                                         description: group.description,
                                         visibilty: 'Public',
                                         groupOrEvent: group.category,
-                                        numberOfMember: '10',
+                                        numberOfMember: group.members.length.toString(),
                                         location: group.location,
                                         onTap: () {
                                           Navigator.of(context).push(

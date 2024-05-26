@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:derpy/Components/register_notify.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/View/Pages/join_group_page.dart';
 import 'package:flutter/material.dart';
@@ -95,6 +96,8 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = supabase.auth.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: TextField(
@@ -106,82 +109,86 @@ class _SearchPageState extends State<SearchPage> {
           style: const TextStyle(color: Colors.white),
           cursorColor: Colors.white,
           autofocus: true,
+          readOnly: currentUser == null ? true : false,
         ),
         backgroundColor: ColorManager.kBackgroundColor,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _searchResults.length,
-              itemBuilder: (context, index) {
-                var result = _searchResults[index];
-                final groupId = result['group_id'];
-                final imageAvatar = supabase.storage.from('Gg').getPublicUrl(result['group_image']);
+      body: currentUser == null
+          ? const RegisterNotify()
+          : _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    var result = _searchResults[index];
+                    final groupId = result['group_id'];
+                    final imageAvatar = supabase.storage.from('Gg').getPublicUrl(result['group_image']);
 
-                return FutureBuilder<bool>(
-                  future: hideJoinGroup(supabase.auth.currentUser!.id, groupId),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return ListTile(
-                        title: Text(result['name']),
-                        subtitle: const Text('Loading...'),
-                      );
-                    } else if (snapshot.hasError) {
-                      return ListTile(
-                        title: Text(result['name']),
-                        subtitle: const Text('Error loading group information.'),
-                      );
-                    } else {
-                      final hasAccess = snapshot.data ?? false;
-                      return FutureBuilder<String>(
-                        future: getMembersLength(groupId),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return ListTile(
-                              title: Text(result['name']),
-                              subtitle: const Text('Loading members count...'),
-                            );
-                          } else if (snapshot.hasError) {
-                            return ListTile(
-                              title: Text(result['name']),
-                              subtitle: const Text('Error loading members count.'),
-                            );
-                          } else {
-                            final numbs = snapshot.data ?? '0';
-                            return ListTile(
-                              leading: Image.network(imageAvatar),
-                              title: Text(result['name']),
-                              subtitle: Text(
-                                result['description'],
-                                maxLines: 1,
-                              ),
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => JoinGroupPage(
-                                    groupAvatar: imageAvatar,
-                                    groupName: result['name'],
-                                    groupDescription: result['description'],
-                                    groupLocation: result['location'],
-                                    numberOfMember: numbs,
-                                    buttonTitle: hasAccess ? 'You are already a member or admin' : 'Join Group',
-                                    textColor: hasAccess ? const Color(0xffea3323) : const Color(0xFF42CA90),
-                                    buttonBackgroundcolor:
-                                        hasAccess ? const Color(0xFFea3323).withOpacity(0.2) : const Color(0xFF184239),
-                                    borderColor: hasAccess ? const Color(0xffea3323) : const Color(0xFF42CA90),
-                                    onTap: () {},
+                    return FutureBuilder<bool>(
+                      future: hideJoinGroup(currentUser.id, groupId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return ListTile(
+                            title: Text(result['name']),
+                            subtitle: const Text('Loading...'),
+                          );
+                        } else if (snapshot.hasError) {
+                          return ListTile(
+                            title: Text(result['name']),
+                            subtitle: const Text('Error loading group information.'),
+                          );
+                        } else {
+                          final hasAccess = snapshot.data ?? false;
+                          return FutureBuilder<String>(
+                            future: getMembersLength(groupId),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return ListTile(
+                                  title: Text(result['name']),
+                                  subtitle: const Text('Loading members count...'),
+                                );
+                              } else if (snapshot.hasError) {
+                                return ListTile(
+                                  title: Text(result['name']),
+                                  subtitle: const Text('Error loading members count.'),
+                                );
+                              } else {
+                                final numbs = snapshot.data ?? '0';
+                                return ListTile(
+                                  leading: Image.network(imageAvatar),
+                                  title: Text(result['name']),
+                                  subtitle: Text(
+                                    result['description'],
+                                    maxLines: 1,
                                   ),
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                      );
-                    }
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => JoinGroupPage(
+                                        groupAvatar: imageAvatar,
+                                        groupName: result['name'],
+                                        groupDescription: result['description'],
+                                        groupLocation: result['location'],
+                                        numberOfMember: numbs,
+                                        buttonTitle: hasAccess ? 'You are already a member or admin' : 'Join Group',
+                                        textColor: hasAccess ? const Color(0xffea3323) : const Color(0xFF42CA90),
+                                        buttonBackgroundcolor: hasAccess
+                                            ? const Color(0xFFea3323).withOpacity(0.2)
+                                            : const Color(0xFF184239),
+                                        borderColor: hasAccess ? const Color(0xffea3323) : const Color(0xFF42CA90),
+                                        onTap: () {},
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                          );
+                        }
+                      },
+                    );
                   },
-                );
-              },
-            ),
+                ),
     );
   }
 }
