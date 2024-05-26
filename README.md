@@ -65,4 +65,5 @@ To run the app on your local machine:
     ```
 
 ## Contact
-Don't hesitate to reach out with any inquiries or feedback. Please contact me at[m.almeer.swe@gmail.com](mailto:email@example.com).
+
+Don't hesitate to reach out with any inquiries or feedback. Please contact me at [m.almeer.swe@gmail.com](mailto:email@example.com).
