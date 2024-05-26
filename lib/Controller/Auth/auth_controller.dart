@@ -195,6 +195,14 @@ class AuthController extends StateNotifier<User?> {
     getUserNameFromGoogleApi(userId);
   }
 
+  /// <---------- Delete User Controller Section ----------> .
+
+  Future<void> deleteUser(String currentUserId) async {
+    await supabase.from('user').delete().eq('id', currentUserId);
+    await supabase.from('group').delete().eq('admin_id', currentUserId);
+    await supabase.from('event').delete().eq('admin_id', currentUserId);
+  }
+
   /// <---------- Sign out Controller Section ----------> .
 
   Future<void> signOut() async {

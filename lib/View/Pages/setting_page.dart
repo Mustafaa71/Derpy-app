@@ -6,7 +6,6 @@ import 'package:derpy/Components/register_notify.dart';
 import 'package:derpy/Components/settings/user_info.dart';
 import 'package:derpy/Constants/color_manager.dart';
 import 'package:derpy/Controller/Auth/auth_controller.dart';
-import 'package:derpy/View/Pages/main_page.dart';
 import 'package:derpy/View/Pages/sponsors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -53,7 +52,7 @@ class SettingPage extends HookConsumerWidget {
                   const Spacer(),
                   supabase.auth.currentUser == null
                       ? const SizedBox.shrink()
-                      : buildLogoutSection(ref, context, isLoading),
+                      : buildLogoutSection(ref, context, isLoading, supabase.auth.currentUser!.id),
                   const Text('All rights reserved for Derpy-team © 2024'),
                 ],
               ),
@@ -83,32 +82,7 @@ class SettingPage extends HookConsumerWidget {
     }
   }
 
-  Future<void> deleteAccount(BuildContext context) async {
-    final supabase = Supabase.instance.client;
-    try {
-      // Get the current user
-      final user = supabase.auth.currentUser;
-      if (user == null) {
-        print('No user is signed in');
-        return;
-      }
-
-      // Delete user account
-      await supabase.auth.admin.deleteUser(user.id);
-
-      print('Account deleted successfully');
-      // You might want to sign the user out and navigate to a different screen
-      await supabase.auth.signOut();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainPage()),
-      );
-    } catch (e) {
-      print('Failed to delete account: $e');
-    }
-  }
-
-  Widget buildLogoutSection(WidgetRef ref, BuildContext context, ValueNotifier<bool> isLoading) {
+  Widget buildLogoutSection(WidgetRef ref, BuildContext context, ValueNotifier<bool> isLoading, String currentUserId) {
     if (isLoading.value) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -141,7 +115,11 @@ class SettingPage extends HookConsumerWidget {
                         ),
                         child: const Text('Delete'),
                         onPressed: () async {
-                          await deleteAccount(context);
+                          Navigator.of(context).pop();
+                          isLoading.value = true;
+                          await ref.watch(AuthController.authControllerProvider.notifier).deleteUser(currentUserId);
+                          await ref.watch(AuthController.authControllerProvider.notifier).signOut();
+                          isLoading.value = false;
                         },
                       ),
                     ],
