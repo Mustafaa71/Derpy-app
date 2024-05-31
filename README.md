@@ -43,7 +43,7 @@ To get started with the Derby App, follow these steps:
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/derby-app.git](https://github.com/Mustafaa71/Derpy-app.git
+    git clone https://github.com/Mustafaa71/derby-app.git
     ```
 2. Navigate to the project directory:
     ```bash
